@@ -10,10 +10,6 @@ const securityHeaders = [
     value: "nosniff",
   },
   {
-    key: "X-Frame-Options",
-    value: "DENY",
-  },
-  {
     key: "Referrer-Policy",
     value: "strict-origin-when-cross-origin",
   },
@@ -30,7 +26,7 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
       "connect-src 'self'",
-      "frame-ancestors 'none'",
+      "frame-ancestors *",
       "base-uri 'self'",
       "form-action 'self'",
     ].join("; "),
