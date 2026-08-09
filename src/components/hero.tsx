@@ -69,7 +69,13 @@ export function Hero({
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 pt-28 sm:px-6 sm:pb-24 sm:pt-32">
         <h1 className="anim-fade-up delay-1 mt-4 max-w-4xl font-head text-[25px] font-bold leading-tight text-white sm:text-[40px] md:text-[50px]">
           <span className="anim-grad-text">
-            Your journey to excellence begins at University of Abuja
+            Your journey
+            <br />
+            to excellence
+            <br />
+            begins at
+            <br />
+            University of Abuja
           </span>
         </h1>
         <p className="anim-fade-up delay-2 mt-5 max-w-2xl text-lg text-white/90 sm:text-xl">
