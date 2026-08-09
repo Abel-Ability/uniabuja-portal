@@ -1,13 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { login } from "@/app/login/actions";
+import { login, resendVerificationEmail } from "@/app/login/actions";
 import type { CaptchaChallenge } from "@/lib/captcha";
 import { PillButton } from "@/components/ui";
 
 export function LoginForm({ challenge }: { challenge: CaptchaChallenge }) {
   const [state, formAction, pending] = useActionState(login, null);
+  const [resendState, resendAction, resendPending] = useActionState(resendVerificationEmail, null);
+  const [username, setUsername] = useState("");
 
   return (
     <form action={formAction} className="space-y-4">
@@ -19,6 +21,35 @@ export function LoginForm({ challenge }: { challenge: CaptchaChallenge }) {
           {state.error}
         </p>
       ) : null}
+      {state?.unverified ? (
+        <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p className="font-semibold">Email not verified yet</p>
+          <div className="space-y-2">
+            {resendState?.sent ? (
+              <p className="text-sm">✓ Verification email sent — check your inbox (and spam).</p>
+            ) : resendState?.link ? (
+              <p className="break-all text-xs">
+                Demo mode — open this link to verify:{" "}
+                <a href={resendState.link} className="font-semibold text-amber-900 underline">
+                  {resendState.link}
+                </a>
+              </p>
+            ) : resendState?.error ? (
+              <p className="text-sm font-medium text-red-700">{resendState.error}</p>
+            ) : null}
+            <form action={resendAction} className="flex flex-wrap items-center gap-3">
+              <input type="hidden" name="username" value={username} />
+              <button
+                type="submit"
+                disabled={resendPending || !username}
+                className="rounded-full border border-amber-300 bg-white px-4 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {resendPending ? "Sending…" : "Resend verification email"}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
       <div>
         <label htmlFor="username" className="mb-1 block text-sm font-semibold text-slate">
           Username
@@ -26,6 +57,8 @@ export function LoginForm({ challenge }: { challenge: CaptchaChallenge }) {
         <input
           id="username"
           name="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
           required
           autoCapitalize="characters"

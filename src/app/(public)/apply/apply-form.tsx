@@ -203,6 +203,30 @@ export function ApplyForm({
           )}
         </div>
 
+        {state.verifyLink ? (
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+            <p className="font-head font-semibold">Demo mode: verify your email</p>
+            <p className="mt-1">
+              No email provider is configured, so use this link to verify your address
+              before signing in:
+            </p>
+            <a
+              href={state.verifyLink}
+              className="mt-2 block break-all font-mono text-xs font-semibold text-amber-900 underline"
+            >
+              {state.verifyLink}
+            </a>
+          </div>
+        ) : state.verifySent ? (
+          <div className="mt-6 rounded-2xl border border-brand/20 bg-brand-light p-5 text-sm text-brand-strong">
+            <p className="font-head font-semibold">Check your inbox</p>
+            <p className="mt-1">
+              A verification link has been sent to your email address. You must verify
+              before signing in — check your inbox and spam folder.
+            </p>
+          </div>
+        ) : null}
+
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <PillLink href="/login">Sign in to the portal</PillLink>
           <Link

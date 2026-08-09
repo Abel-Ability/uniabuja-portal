@@ -7,6 +7,7 @@ import { writeAudit } from "@/lib/audit";
 import { metaFromHeaders } from "@/lib/session";
 import { rateLimit } from "@/lib/rate-limit";
 import { generateCaptcha, verifyCaptcha, type CaptchaChallenge } from "@/lib/captcha";
+import { issueEmailVerification } from "@/lib/verification";
 
 export type ApplyResult = {
   ok?: boolean;
@@ -16,6 +17,8 @@ export type ApplyResult = {
   fullName?: string;
   programme?: string;
   reference?: string;
+  verifySent?: boolean;
+  verifyLink?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -194,6 +197,16 @@ export async function submitPublicApplication(
     },
   });
 
+  // Unverified accounts (fresh applicants, or returning ones who never
+  // completed the email step) get a one-time verification magic link.
+  const verification = result.user.emailVerifiedAt
+    ? ({ verifySent: false } as const)
+    : await issueEmailVerification({
+        id: result.user.id,
+        email: result.user.email,
+        fullName: result.user.fullName,
+      });
+
   return {
     ok: true,
     username: result.user.username,
@@ -201,5 +214,7 @@ export async function submitPublicApplication(
     fullName,
     programme: `${programme.code} · ${programme.name}`,
     reference: result.app.id,
+    verifySent: "verifySent" in verification ? verification.verifySent : verification.sent,
+    verifyLink: "verifySent" in verification ? undefined : verification.link,
   };
 }

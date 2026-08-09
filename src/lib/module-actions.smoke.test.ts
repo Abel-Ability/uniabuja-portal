@@ -28,6 +28,7 @@ vi.mock("next/navigation", () => ({
 const actions = await import("./module-actions");
 const applyActions = await import("../app/(public)/apply/actions");
 const loginHelpers = await import("../app/login/actions");
+const verification = await import("../lib/verification");
 import { validatePasswordPolicy } from "./password";
 
 let studentId: string;
@@ -234,7 +235,7 @@ describe("module actions (integration)", () => {
     const after = await prisma.transcriptRequest.findUnique({ where: { id: created!.id } });
     expect(after!.status).toBe("ISSUED");
     expect(after!.issuedAt).toBeTruthy();
-  });
+  }, 20_000);
 });
 
 describe("public application flow (no session)", () => {
@@ -295,12 +296,26 @@ describe("public application flow (no session)", () => {
     expect(user!.role).toBe("APPLICANT");
     expect(user!.mustChangePassword).toBe(true);
     expect(user!.username).toBe(email.toUpperCase());
+    expect(user!.emailVerifiedAt).toBeNull();
+
+    // Demo mode (no RESEND_API_KEY) returns the magic link to show on-screen.
+    expect(res.verifyLink).toMatch(/\/verify-email\?token=/);
+    const rawToken = new URLSearchParams(res.verifyLink!.split("?")[1]).get("token")!;
+    const tokens = await prisma.emailVerificationToken.count({
+      where: { userId: user!.id, usedAt: null },
+    });
+    expect(tokens).toBe(1);
+
+    const v = await verification.verifyEmailToken(rawToken);
+    expect(v.ok).toBe(true);
+    const verified = await prisma.user.findUnique({ where: { email } });
+    expect(verified!.emailVerifiedAt).toBeTruthy();
 
     const app = await prisma.application.findFirst({ where: { userId: user!.id } });
     expect(app).toBeTruthy();
     expect(app!.status).toBe("SUBMITTED");
     expect(app!.submittedAt).toBeTruthy();
-  });
+  }, 30_000);
 
   it("rejects a second application from the same email", async () => {
     const res = await submit();

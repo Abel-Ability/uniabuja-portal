@@ -14,6 +14,7 @@ import {
 import { writeAudit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { verifyCaptcha } from "@/lib/captcha";
+import { issueEmailVerification } from "@/lib/verification";
 import {
   MAX_FAILED_ATTEMPTS,
   LOCKOUT_MS,
@@ -22,7 +23,7 @@ import {
   MAX_CONCURRENT_SESSIONS,
 } from "@/lib/constants";
 
-export type AuthResult = { error?: string };
+export type AuthResult = { error?: string; unverified?: boolean };
 
 // Usernames that are email addresses are matched case-insensitively so accounts
 // created with a lowercase email (e.g. the public application form) can sign in
@@ -134,6 +135,12 @@ export async function login(
       actorRole: user.role,
       after: { evicted: excess.length, limit: MAX_CONCURRENT_SESSIONS },
     });
+  }
+
+  // Email verification gate: accounts created via the public apply form must
+  // verify their email before a session can be issued.
+  if (!user.emailVerifiedAt) {
+    return { error: "Please verify your email address before signing in.", unverified: true };
   }
 
   await createSession(user.id, m, !user.mfaEnabled);
@@ -284,4 +291,37 @@ export async function revokeAllSessionsAction(): Promise<void> {
     actorRole: current.user.role,
     sessionId: current.id,
   });
+}
+
+export type ResendResult = {
+  error?: string;
+  sent?: boolean;
+  link?: string;
+};
+
+// Re-issue a verification email for an unverified account. In demo mode (no
+// email provider configured) the magic link is returned so the UI can show it.
+export async function resendVerificationEmail(
+  _prev: ResendResult | null,
+  formData: FormData,
+): Promise<ResendResult> {
+  const m = await meta();
+  const lim = rateLimit(`verify-resend:${m.ip ?? "unknown"}`, 5, 60_000);
+  if (!lim.allowed) {
+    return { error: `Too many requests. Try again in ${lim.retryAfterSeconds}s.` };
+  }
+  const username = normaliseIdentifier(String(formData.get("username") ?? ""));
+  const user = await findUserByUsername(username);
+  if (!user) return { error: "No account found for that identifier." };
+  if (user.emailVerifiedAt) {
+    return { error: "This account is already verified — you can sign in." };
+  }
+  const res = await issueEmailVerification({
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+  });
+  if (res.ok && res.sent) return { sent: true };
+  if (res.link) return { link: res.link };
+  return { error: res.error ?? "Could not send the verification email." };
 }

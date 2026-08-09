@@ -35,6 +35,7 @@ model User {
   mustChangePassword Boolean @default(false)
   mfaEnabled       Boolean @default(false)
   mfaSecret        String? // base32 TOTP secret (self-service, demo)
+  emailVerifiedAt  DateTime? // set once the applicant verifies via email link
   failedAttempts   Int    @default(0)
   lockedUntil      DateTime?
   lastLoginAt      DateTime?
@@ -43,6 +44,7 @@ model User {
 
     sessions              Session[]
     passwordHistory       PasswordHistory[]
+    emailVerificationTokens EmailVerificationToken[]
   applications          Application[]
   invoices              Invoice[]
   payments              Payment[]
@@ -106,6 +108,18 @@ model Session {
   mfaVerifiedAt DateTime?
   stepUpUntil   DateTime?
   createdAt     DateTime @default(now())
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model PasswordHistory {

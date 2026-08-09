@@ -35,7 +35,7 @@ async function main() {
         if (t.table_name.startsWith("_prisma")) continue;
         await tx.$executeRawUnsafe(`TRUNCATE TABLE "${t.table_name}" CASCADE`);
       }
-    }, { timeout: 120_000 });
+    }, { maxWait: 30_000, timeout: 120_000 });
   } else {
     await prisma.$executeRawUnsafe("PRAGMA foreign_keys = OFF");
     await prisma.$transaction(async (tx) => {
@@ -88,83 +88,84 @@ async function main() {
 
     // ---- users (one per role) ----
     const hash = await hashPassword(DEMO_PASSWORD);
+    const verifiedAt = new Date();
     const users = await Promise.all([
       tx.user.create({ data: {
         username: "applicant@uniabuja.edu.ng", email: "applicant@uniabuja.edu.ng",
-        passwordHash: hash, role: "APPLICANT", firstName: "Tunde", lastName: "Bello",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "APPLICANT", firstName: "Tunde", lastName: "Bello",
         fullName: "Tunde Bello", phone: "+2348012345678", jambNo: "JAMB-00918273",
         mustChangePassword: true, programmeId: ugProgramme.id,
       } }),
       tx.user.create({ data: {
         username: "12/345ABC/678", email: "student@uniabuja.edu.ng",
-        passwordHash: hash, role: "STUDENT", firstName: "Amina", lastName: "Yusuf",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT", firstName: "Amina", lastName: "Yusuf",
         fullName: "Amina Yusuf", phone: "+2348098765432", registrationNo: "12/345ABC/678",
         programmeId: ugProgramme.id,
       } }),
       tx.user.create({ data: {
         username: "UA/PG1234/567890", email: "pgstudent@uniabuja.edu.ng",
-        passwordHash: hash, role: "STUDENT", firstName: "Chinedu", lastName: "Okafor",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT", firstName: "Chinedu", lastName: "Okafor",
         fullName: "Chinedu Okafor", phone: "+2348077777777", registrationNo: "UA/PG1234/567890",
         programmeId: pgProgramme.id,
       } }),
       tx.user.create({ data: {
         username: "AB12", email: "lecturer@uniabuja.edu.ng",
-        passwordHash: hash, role: "LECTURER", firstName: "Dr.", lastName: "Grace Adamu",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "LECTURER", firstName: "Dr.", lastName: "Grace Adamu",
         fullName: "Dr. Grace Adamu", phone: "+2348066666666", staffNo: "AB12",
       } }),
       tx.user.create({ data: {
         username: "CD34", email: "hod@uniabuja.edu.ng",
-        passwordHash: hash, role: "HOD_DEAN", firstName: "Prof.", lastName: "Samuel Eze",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "HOD_DEAN", firstName: "Prof.", lastName: "Samuel Eze",
         fullName: "Prof. Samuel Eze", phone: "+2348055555555", staffNo: "CD34",
       } }),
       tx.user.create({ data: {
         username: "EF56", email: "registry@uniabuja.edu.ng",
-        passwordHash: hash, role: "REGISTRY", firstName: "Mrs.", lastName: "Fatima Lawal",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "REGISTRY", firstName: "Mrs.", lastName: "Fatima Lawal",
         fullName: "Mrs. Fatima Lawal", phone: "+2348044444444", staffNo: "EF56",
       } }),
       tx.user.create({ data: {
         username: "GH78", email: "bursary@uniabuja.edu.ng",
-        passwordHash: hash, role: "BURSARY", firstName: "Mr.", lastName: "Ibrahim Musa",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "BURSARY", firstName: "Mr.", lastName: "Ibrahim Musa",
         fullName: "Mr. Ibrahim Musa", phone: "+2348033333333", staffNo: "GH78",
       } }),
       tx.user.create({ data: {
         username: "IJ90", email: "studentaffairs@uniabuja.edu.ng",
-        passwordHash: hash, role: "STUDENT_AFFAIRS", firstName: "Ms.", lastName: "Ngozi Ade",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT_AFFAIRS", firstName: "Ms.", lastName: "Ngozi Ade",
         fullName: "Ms. Ngozi Ade", phone: "+2348022222222", staffNo: "IJ90",
       } }),
       tx.user.create({ data: {
         username: "KL12", email: "exams@uniabuja.edu.ng",
-        passwordHash: hash, role: "EXAMS_RECORDS", firstName: "Mr.", lastName: "Peter John",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "EXAMS_RECORDS", firstName: "Mr.", lastName: "Peter John",
         fullName: "Mr. Peter John", phone: "+2348011111111", staffNo: "KL12",
       } }),
       tx.user.create({ data: {
         username: "MN34", email: "pgschool@uniabuja.edu.ng",
-        passwordHash: hash, role: "PG_SCHOOL", firstName: "Dr.", lastName: "Hauwa Bala",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "PG_SCHOOL", firstName: "Dr.", lastName: "Hauwa Bala",
         fullName: "Dr. Hauwa Bala", phone: "+2348099999999", staffNo: "MN34",
       } }),
       tx.user.create({ data: {
         username: "OP56", email: "siwes@uniabuja.edu.ng",
-        passwordHash: hash, role: "SIWES", firstName: "Engr.", lastName: "Danladi Kalu",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "SIWES", firstName: "Engr.", lastName: "Danladi Kalu",
         fullName: "Engr. Danladi Kalu", phone: "+2348088888888", staffNo: "OP56",
       } }),
       tx.user.create({ data: {
         username: "QR78", email: "timetable@uniabuja.edu.ng",
-        passwordHash: hash, role: "TIMETABLE", firstName: "Mrs.", lastName: "Chioma Obi",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "TIMETABLE", firstName: "Mrs.", lastName: "Chioma Obi",
         fullName: "Mrs. Chioma Obi", phone: "+2348077777777", staffNo: "QR78",
       } }),
       tx.user.create({ data: {
         username: "ST90", email: "itadmin@uniabuja.edu.ng",
-        passwordHash: hash, role: "IT_ADMIN", firstName: "Mr.", lastName: "Yusuf Abubakar",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "IT_ADMIN", firstName: "Mr.", lastName: "Yusuf Abubakar",
         fullName: "Mr. Yusuf Abubakar", phone: "+2348066666666", staffNo: "ST90",
       } }),
       tx.user.create({ data: {
         username: "UV12", email: "dvc@uniabuja.edu.ng",
-        passwordHash: hash, role: "DVC_OVERSIGHT", firstName: "Prof.", lastName: "Rose Adeyemi",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "DVC_OVERSIGHT", firstName: "Prof.", lastName: "Rose Adeyemi",
         fullName: "Prof. Rose Adeyemi", phone: "+2348055555555", staffNo: "UV12",
       } }),
       tx.user.create({ data: {
         username: "WX34", email: "vc@uniabuja.edu.ng",
-        passwordHash: hash, role: "VC", firstName: "Prof.", lastName: "Emeka Okonkwo",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "VC", firstName: "Prof.", lastName: "Emeka Okonkwo",
         fullName: "Prof. Emeka Okonkwo", phone: "+2348040000000", staffNo: "WX34",
       } }),
     ]);
@@ -344,7 +345,7 @@ async function main() {
     const alumni = await tx.user.create({
       data: {
         username: "99/123XYZ/456", email: "alumni@uniabuja.edu.ng",
-        passwordHash: hash, role: "STUDENT", firstName: "Blessing", lastName: "Okafor",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT", firstName: "Blessing", lastName: "Okafor",
         fullName: "Blessing Okafor", phone: "+2348000000000", registrationNo: "99/123XYZ/456",
         status: "GRADUATED",
       },
@@ -515,7 +516,7 @@ async function main() {
     await tx.appeal.create({
       data: { userId: student.id, caseType: "MISCONDUCT", misconductCaseId: misconduct.id, grounds: "The lateness was caused by documented hospital admission.", status: "UNDER_REVIEW" },
     });
-  }, { timeout: 120_000 });
+  }, { maxWait: 30_000, timeout: 120_000 });
 
   console.log("Seed complete. Demo login: use any seeded email/password with password", DEMO_PASSWORD);
 }
