@@ -61,7 +61,7 @@ export function Header() {
             <span className="hidden text-[10px] font-medium tracking-widest text-brand-strong sm:block sm:text-xs">
               (Now Yakubu Gowon University)
             </span>
-            <span className="block truncate text-[10px] font-medium tracking-widest text-brand-strong sm:text-xs">
+            <span className="block truncate font-head text-[10px] font-medium italic tracking-widest text-red-600 sm:text-xs">
               The University for National Unity
             </span>
           </span>

@@ -67,9 +67,6 @@ export function Hero({
       <div aria-hidden="true" className="hero-overlay absolute inset-0" />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 pt-28 sm:px-6 sm:pb-24 sm:pt-32">
-        <p className="anim-fade-up absolute left-4 top-4 z-10 font-head text-[8px] font-semibold italic tracking-[0.3em] text-red-600 sm:left-6 sm:text-[9.6px]">
-          The University for National Unity
-        </p>
         <h1 className="anim-fade-up delay-1 mt-4 max-w-4xl font-head text-[25px] font-bold leading-tight text-white sm:text-[40px] md:text-[50px]">
           <span className="anim-grad-text">
             Your journey to excellence begins at University of Abuja
