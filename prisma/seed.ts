@@ -21,20 +21,34 @@ const COURSES: { code: string; title: string; units: number; level: number; seme
 
 const WIPE_EXCLUDE = ["sqlite_sequence"];
 
+const IS_POSTGRES = /^postgres(ql)?:\/\//.test(process.env.DATABASE_URL ?? "");
+
 async function main() {
   console.log("Seeding UniAbuja portal demo data…");
 
-  await prisma.$executeRawUnsafe("PRAGMA foreign_keys = OFF");
-  await prisma.$transaction(async (tx) => {
-    const tables = await tx.$queryRawUnsafe<{ name: string }[]>(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_prisma_%'",
-    );
-    for (const t of tables) {
-      if (WIPE_EXCLUDE.includes(t.name)) continue;
-      await tx.$executeRawUnsafe(`DELETE FROM "${t.name}"`);
-    }
-  });
-  await prisma.$executeRawUnsafe("PRAGMA foreign_keys = ON");
+  if (IS_POSTGRES) {
+    await prisma.$transaction(async (tx) => {
+      const tables = await tx.$queryRawUnsafe<{ table_name: string }[]>(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+      );
+      for (const t of tables) {
+        if (t.table_name.startsWith("_prisma")) continue;
+        await tx.$executeRawUnsafe(`TRUNCATE TABLE "${t.table_name}" CASCADE`);
+      }
+    }, { timeout: 120_000 });
+  } else {
+    await prisma.$executeRawUnsafe("PRAGMA foreign_keys = OFF");
+    await prisma.$transaction(async (tx) => {
+      const tables = await tx.$queryRawUnsafe<{ name: string }[]>(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_prisma_%'",
+      );
+      for (const t of tables) {
+        if (WIPE_EXCLUDE.includes(t.name)) continue;
+        await tx.$executeRawUnsafe(`DELETE FROM "${t.name}"`);
+      }
+    });
+    await prisma.$executeRawUnsafe("PRAGMA foreign_keys = ON");
+  }
 
   await prisma.$transaction(async (tx) => {
     // ---- feature flags ----
@@ -501,7 +515,7 @@ async function main() {
     await tx.appeal.create({
       data: { userId: student.id, caseType: "MISCONDUCT", misconductCaseId: misconduct.id, grounds: "The lateness was caused by documented hospital admission.", status: "UNDER_REVIEW" },
     });
-  });
+  }, { timeout: 120_000 });
 
   console.log("Seed complete. Demo login: use any seeded email/password with password", DEMO_PASSWORD);
 }

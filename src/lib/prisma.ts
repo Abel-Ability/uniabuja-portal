@@ -1,17 +1,17 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-// SQLite via driver adapter (Prisma 7). In production, swap the adapter for
-// @prisma/adapter-pg pointing at PostgreSQL — schema and queries are unchanged.
+// PostgreSQL via driver adapter (Prisma 7). Local development can point
+// DATABASE_URL at a local/remote Postgres; see docs/MIGRATION.md.
 //
-// The Prisma CLI and the runtime adapter both resolve "file:" URLs against
-// process.cwd(), so the same DATABASE_URL works for migrations and the app.
+// The Prisma CLI and the runtime adapter both resolve connection strings
+// from DATABASE_URL, so the same value works for migrations and the app.
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createClient(): PrismaClient {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? "file:./dev.db",
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
   });
   return new PrismaClient({ adapter });
 }
