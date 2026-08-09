@@ -18,7 +18,7 @@ const MODULE_HIGHLIGHTS = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [announcements, academicUnits, centres] = await Promise.all([
+  const [announcements, academicUnits, centres, academicNext] = await Promise.all([
     prisma.announcement.findMany({
       where: { scope: "PUBLIC" },
       orderBy: { publishedAt: "desc" },
@@ -26,6 +26,11 @@ export default async function Home() {
     }),
     getAcademicUnits(),
     getCentres(),
+    prisma.academicCalendarEntry.findFirst({
+      where: { published: true, scope: "PUBLIC", endsOn: { gte: new Date() } },
+      orderBy: { startsOn: "asc" },
+      select: { title: true, entryType: true, startsOn: true, endsOn: true },
+    }),
   ]);
 
   return (
@@ -35,7 +40,18 @@ export default async function Home() {
         departmentCount={academicUnits.departmentCount}
         instituteCentreCount={centres.length}
       />
-      <NowWidget />
+      <NowWidget
+        academicNext={
+          academicNext
+            ? {
+                title: academicNext.title,
+                entryType: academicNext.entryType,
+                startsOn: academicNext.startsOn.toISOString(),
+                endsOn: academicNext.endsOn.toISOString(),
+              }
+            : null
+        }
+      />
 
       {/* Recent announcements */}
       <section className="bg-brand-strong px-4 pb-5 pt-2.5 text-white sm:px-6 sm:pb-6 sm:pt-3" aria-labelledby="announcements-heading">

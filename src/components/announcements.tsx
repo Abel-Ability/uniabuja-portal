@@ -39,37 +39,35 @@ export function AnnouncementCard({ item }: { item: AnnouncementRow }) {
   );
 }
 
-function MarqueeCard({ item }: { item: AnnouncementRow }) {
+function MarqueeItem({ item }: { item: AnnouncementRow }) {
   return (
-    <div className="flex h-full flex-col justify-center gap-1.5 rounded-xl bg-white px-4 py-3">
-      <div className="flex items-center justify-between gap-2">
-        <Badge tone={CATEGORY_TONES[item.category] ?? "slate"}>{item.category}</Badge>
-        <time dateTime={item.publishedAt.toISOString()} className="text-xs text-slate/70">
-          {timeAgo(item.publishedAt)}
-        </time>
-      </div>
-      <h3 className="line-clamp-1 font-head text-sm font-bold leading-snug text-slate">
+    <span className="flex items-center gap-3 whitespace-nowrap">
+      <span className="rounded-full bg-gold px-2.5 py-0.5 text-[14px] font-bold uppercase tracking-wider text-brand-strong">
+        {item.category}
+      </span>
+      <span className="font-head text-[21px] font-bold leading-none text-white">
         {item.title}
-      </h3>
-      <p className="line-clamp-2 text-xs leading-snug text-slate/75">{item.body}</p>
-    </div>
+      </span>
+      <span className="text-[20px] leading-snug text-white/75">{item.body}</span>
+      <span className="text-[20px] leading-snug text-gold" aria-hidden="true">✦</span>
+    </span>
   );
 }
 
 export function AnnouncementMarquee({ items }: { items: AnnouncementRow[] }) {
   if (items.length === 0) return null;
-  const style = { "--marquee-duration": `${Math.max(items.length * 6, 24)}s` } as CSSProperties;
+  const style = { "--marquee-duration": `${Math.max(items.length * 8, 30)}s` } as CSSProperties;
   return (
-    <div className="marquee h-32 overflow-hidden" style={style}>
+    <div className="marquee h-14 overflow-hidden" style={style}>
       <div className="marquee-track">
         <div className="marquee-group">
           {items.map((item) => (
-            <MarqueeCard key={item.id} item={item} />
+            <MarqueeItem key={item.id} item={item} />
           ))}
         </div>
         <div className="marquee-group" aria-hidden="true">
           {items.map((item) => (
-            <MarqueeCard key={`${item.id}-copy`} item={item} />
+            <MarqueeItem key={`${item.id}-copy`} item={item} />
           ))}
         </div>
       </div>

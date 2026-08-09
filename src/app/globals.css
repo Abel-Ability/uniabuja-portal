@@ -230,25 +230,29 @@ html.js .reveal.is-visible {
 }
 .marquee {
   --marquee-duration: 45s;
-  /* Fade cards at the edges instead of clipping hard */
-  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  /* Soft-fade items at the very edges instead of clipping hard */
+  -webkit-mask-image: linear-gradient(to right, transparent, black 2.5%, black 97.5%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 2.5%, black 97.5%, transparent);
 }
 .marquee-track {
   display: flex;
+  align-items: center;
   height: 100%;
   width: max-content;
   animation: marquee-rtl var(--marquee-duration) linear infinite;
   will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .marquee-group {
   display: flex;
+  align-items: center;
   height: 100%;
   gap: 1.5rem;
   padding-right: 1.5rem;
 }
 .marquee-group > * {
-  flex: 0 0 300px;
+  flex: 0 0 auto;
 }
 .marquee:hover .marquee-track,
 .marquee:focus-within .marquee-track {
@@ -277,7 +281,7 @@ html.js .reveal.is-visible {
 }
 
 /* Reduced-motion fallback for the marquee: hide the duplicate copy and
-   turn the track into a wrapping, manually scrollable grid so every card
+   turn the track into a wrapping, manually scrollable list so every item
    stays reachable. !important beats the universal reduce rule above. */
 @media (prefers-reduced-motion: reduce) {
   .marquee {
@@ -297,6 +301,6 @@ html.js .reveal.is-visible {
     display: none;
   }
   .marquee-group > * {
-    flex: 1 1 280px;
+    flex: 0 1 auto;
   }
 }

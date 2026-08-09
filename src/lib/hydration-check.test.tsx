@@ -125,7 +125,7 @@ describe("hydration smoke (client components)", () => {
   });
 
   it("NowWidget hydrates without attribute mismatches", async () => {
-    await check("NowWidget", <NowWidget />);
+    await check("NowWidget", <NowWidget academicNext={null} />);
   });
 
   it("ConsentBanner hydrates cleanly (returning visitor, localStorage set)", async () => {
