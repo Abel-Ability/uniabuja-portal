@@ -146,6 +146,9 @@ export function NowWidget() {
         <p className="font-head text-3xl font-bold leading-none tabular-nums">
           {timeText ?? "–:––"}
         </p>
+        <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-brand-strong">
+          Abuja, Nigeria
+        </p>
       </div>
       <div className="flex items-center gap-1.5 border-l border-slate/15 pl-3">
         <WeatherIcon className={`h-5 w-5 ${weather.tone}`} aria-hidden="true" />
