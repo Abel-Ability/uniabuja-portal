@@ -111,12 +111,24 @@ type WeatherPayload = {
 type AirPayload = { at?: number; current: { european_aqi?: number; pm2_5?: number } };
 type Holiday = { date: string; localName: string };
 
+const isWeatherPayload = (v: WeatherPayload): boolean =>
+  typeof v?.current === "object" &&
+  typeof v.current?.weather_code === "number" &&
+  typeof v?.daily === "object" &&
+  Array.isArray(v.daily?.time);
+
+const isAirPayload = (v: AirPayload): boolean =>
+  typeof v?.current === "object" && typeof v.current?.european_aqi === "number";
+
 // Generic cached JSON fetch: serve localStorage immediately, refresh in the
 // background when stale, and keep serving old data if the network fails.
+// `isShaped` rejects malformed payloads (e.g. an Open-Meteo error object or an
+// old cache shape) so they are neither served nor persisted.
 function useCachedJson<T extends { at?: number }>(
   key: string,
   url: string,
   ttlMs: number,
+  isShaped?: (value: T) => boolean,
 ): T | null {
   const [data, setData] = useState<T | null>(null);
   useEffect(() => {
@@ -125,7 +137,9 @@ function useCachedJson<T extends { at?: number }>(
     const readCache = (): T | null => {
       try {
         const raw = localStorage.getItem(key);
-        return raw ? (JSON.parse(raw) as T) : null;
+        if (!raw) return null;
+        const value = JSON.parse(raw) as T;
+        return !isShaped || isShaped(value) ? value : null;
       } catch {
         return null;
       }
@@ -148,6 +162,7 @@ function useCachedJson<T extends { at?: number }>(
       .then((json) => {
         if (cancelled) return;
         const fresh = { at: Date.now(), ...json } as T;
+        if (isShaped && !isShaped(fresh)) return;
         setData(fresh);
         try {
           localStorage.setItem(key, JSON.stringify(fresh));
@@ -162,7 +177,7 @@ function useCachedJson<T extends { at?: number }>(
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [key, url, ttlMs]);
+  }, [key, url, ttlMs, isShaped]);
   return data;
 }
 
@@ -253,8 +268,13 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
     return (parts.find((p) => p.type === "timeZoneName")?.value ?? "UTC").replace("GMT", "UTC");
   }, []);
 
-  const weather = useCachedJson<WeatherPayload>(WEATHER_CACHE_KEY, WEATHER_URL, CACHE_TTL_MS);
-  const air = useCachedJson<AirPayload>(AIR_CACHE_KEY, AIR_QUALITY_URL, CACHE_TTL_MS);
+  const weather = useCachedJson<WeatherPayload>(
+    WEATHER_CACHE_KEY,
+    WEATHER_URL,
+    CACHE_TTL_MS,
+    isWeatherPayload,
+  );
+  const air = useCachedJson<AirPayload>(AIR_CACHE_KEY, AIR_QUALITY_URL, CACHE_TTL_MS, isAirPayload);
   const holiday = useNextHoliday();
 
   const dateText = now
@@ -273,13 +293,15 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
       }).format(now)
     : null;
 
-  const code = weather?.current.weather_code ?? 0;
-  const temp = weather?.current.temperature_2m ?? null;
-  const feelsLike = weather?.current.apparent_temperature ?? null;
-  const humidity = weather?.current.relative_humidity_2m ?? null;
-  const wind = weather?.current.wind_speed_10m ?? null;
+  const current = weather?.current;
+  const daily = weather?.daily;
+  const code = current?.weather_code ?? 0;
+  const temp = current?.temperature_2m ?? null;
+  const feelsLike = current?.apparent_temperature ?? null;
+  const humidity = current?.relative_humidity_2m ?? null;
+  const wind = current?.wind_speed_10m ?? null;
 
-  const aqi = air?.current.european_aqi ?? null;
+  const aqi = air?.current?.european_aqi ?? null;
   const aqiInfo =
     aqi === null
       ? null
@@ -295,7 +317,6 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
                 ? { label: "Very poor", tone: "text-red-600" }
                 : { label: "Hazardous", tone: "text-red-700" };
 
-  const daily = weather?.daily;
   const forecast = (daily?.time ?? []).map((day, i) => {
     const dailyCode = daily?.weather_code?.[i] ?? 0;
     const w = WEATHER[dailyCode] ?? { label: "Weather", icon: Sun, tone: "text-amber-500" };
@@ -308,8 +329,8 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
     };
   });
 
-  const sunrise = weather?.daily.sunrise?.[0]?.slice(11, 16);
-  const sunset = weather?.daily.sunset?.[0]?.slice(11, 16);
+  const sunrise = daily?.sunrise?.[0]?.slice(11, 16);
+  const sunset = daily?.sunset?.[0]?.slice(11, 16);
 
   const weatherInfo = WEATHER[code] ?? { label: "Weather", icon: Sun, tone: "text-amber-500" };
   const WeatherIcon = weatherInfo.icon;
