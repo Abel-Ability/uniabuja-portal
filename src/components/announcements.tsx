@@ -2,9 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Badge, Card } from "./ui";
 import { formatDate, timeAgo } from "@/lib/utils";
-import type { Prisma } from "@/generated/prisma/client";
-
-export type AnnouncementRow = Prisma.AnnouncementModel & { author?: { fullName: string } | null };
+import type { AnnouncementItem } from "@/lib/sheets";
 
 const CATEGORY_TONES: Record<string, "brand" | "gold" | "slate" | "red"> = {
   NEWS: "brand",
@@ -14,7 +12,7 @@ const CATEGORY_TONES: Record<string, "brand" | "gold" | "slate" | "red"> = {
   GENERAL: "slate",
 };
 
-export function AnnouncementCard({ item }: { item: AnnouncementRow }) {
+export function AnnouncementCard({ item }: { item: AnnouncementItem }) {
   return (
     <Card className="card-lift flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
@@ -39,7 +37,7 @@ export function AnnouncementCard({ item }: { item: AnnouncementRow }) {
   );
 }
 
-function MarqueeItem({ item }: { item: AnnouncementRow }) {
+function MarqueeItem({ item }: { item: AnnouncementItem }) {
   return (
     <span className="flex items-center gap-3 whitespace-nowrap">
       <span className="rounded-full bg-gold px-2.5 py-0.5 text-[14px] font-bold uppercase tracking-wider text-brand-strong">
@@ -54,7 +52,7 @@ function MarqueeItem({ item }: { item: AnnouncementRow }) {
   );
 }
 
-export function AnnouncementMarquee({ items }: { items: AnnouncementRow[] }) {
+export function AnnouncementMarquee({ items }: { items: AnnouncementItem[] }) {
   if (items.length === 0) return null;
   const style = { "--marquee-duration": `${Math.max(items.length * 8, 30)}s` } as CSSProperties;
   return (
@@ -79,7 +77,7 @@ export function AnnouncementList({
   items,
   viewAllHref,
 }: {
-  items: AnnouncementRow[];
+  items: AnnouncementItem[];
   viewAllHref?: string;
 }) {
   if (items.length === 0) {

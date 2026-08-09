@@ -219,6 +219,29 @@ html.js .reveal.is-visible {
 /* Gentle scroll-hint bounce at the base of the hero */
 .scroll-hint { animation: bounce-soft 2s ease-in-out infinite; }
 
+/* Floating deadline ticket drifting across the hero. The outer wrapper
+   carries the slow left->right pass (clipped by the hero's overflow-hidden)
+   while an inner wrapper adds a bob + tilt. Falls back to a static centred
+   badge under prefers-reduced-motion (see override below). */
+@keyframes float-across {
+  from { transform: translate3d(-340px, 0, 0); }
+  to   { transform: translate3d(calc(100vw + 40px), 0, 0); }
+}
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-10px) rotate(2deg); }
+}
+.float-across {
+  animation: float-across 48s linear infinite;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.float-bob {
+  animation: float-bob 7s ease-in-out infinite;
+  will-change: transform;
+}
+
 /* Announcement marquee — continuous right-to-left ticker.
    Content is duplicated; the track translates 0 -> -50% so the loop is
    seamless. Duration is set per-instance (based on card count) via
@@ -302,5 +325,20 @@ html.js .reveal.is-visible {
   }
   .marquee-group > * {
     flex: 0 1 auto;
+  }
+}
+
+/* Reduced-motion fallback for the floating deadline: stop drifting/bobbing
+   and pin the badge statically above the hero headline. !important beats the
+   universal reduce rule above (which would otherwise freeze it off-screen at
+   the 100% keyframe position). */
+@media (prefers-reduced-motion: reduce) {
+  .float-across,
+  .float-bob {
+    animation: none !important;
+  }
+  .float-across {
+    left: 50% !important;
+    transform: translate3d(-50%, 0, 0) !important;
   }
 }

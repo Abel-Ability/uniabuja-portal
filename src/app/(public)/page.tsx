@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getAcademicUnits, getCentres } from "@/lib/sheets";
+import { getAcademicUnits, getCentres, getSheetAnnouncements, getSheetDeadlines } from "@/lib/sheets";
 import { Hero } from "@/components/hero";
 import { NowWidget } from "@/components/now-widget";
 import { SectionHeading, PillLink, Card } from "@/components/ui";
@@ -18,20 +18,35 @@ const MODULE_HIGHLIGHTS = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [announcements, academicUnits, centres, academicNext] = await Promise.all([
+  const [
+    sheetAnnouncements,
+    academicUnits,
+    centres,
+    sheetDeadlines,
+    dbAnnouncements,
+    dbDeadline,
+  ] = await Promise.all([
+    getSheetAnnouncements(),
+    getAcademicUnits(),
+    getCentres(),
+    getSheetDeadlines(),
     prisma.announcement.findMany({
       where: { scope: "PUBLIC" },
       orderBy: { publishedAt: "desc" },
       take: 6,
     }),
-    getAcademicUnits(),
-    getCentres(),
     prisma.academicCalendarEntry.findFirst({
       where: { published: true, scope: "PUBLIC", endsOn: { gte: new Date() } },
       orderBy: { startsOn: "asc" },
-      select: { title: true, entryType: true, startsOn: true, endsOn: true },
+      select: { title: true, endsOn: true },
     }),
   ]);
+
+  // Prefer Google Sheets; fall back to the database when a tab is absent/empty.
+  const announcements = sheetAnnouncements.length > 0 ? sheetAnnouncements : dbAnnouncements;
+  const deadline =
+    sheetDeadlines.find((d) => new Date(d.endsOn) >= new Date()) ??
+    (dbDeadline ? { title: dbDeadline.title, endsOn: dbDeadline.endsOn.toISOString() } : null);
 
   return (
     <>
@@ -39,19 +54,9 @@ export default async function Home() {
         facultyCount={academicUnits.facultyCount}
         departmentCount={academicUnits.departmentCount}
         instituteCentreCount={centres.length}
+        deadline={deadline}
       />
-      <NowWidget
-        academicNext={
-          academicNext
-            ? {
-                title: academicNext.title,
-                entryType: academicNext.entryType,
-                startsOn: academicNext.startsOn.toISOString(),
-                endsOn: academicNext.endsOn.toISOString(),
-              }
-            : null
-        }
-      />
+      <NowWidget />
 
       {/* Recent announcements */}
       <section className="bg-brand-strong px-4 pb-5 pt-2.5 text-white sm:px-6 sm:pb-6 sm:pt-3" aria-labelledby="announcements-heading">

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Building2, FileText, Beaker, Users, type LucideIcon } from "lucide-react";
+import { FloatingDeadline, type Deadline } from "@/components/floating-deadline";
 
 // Full-screen hero with scroll parallax: the background image scales/translates
 // slower than the content. Dark gradient overlay (slate 70% → 20%) keeps text
@@ -12,10 +13,12 @@ export function Hero({
   facultyCount,
   departmentCount,
   instituteCentreCount,
+  deadline,
 }: {
   facultyCount: number;
   departmentCount: number;
   instituteCentreCount: number;
+  deadline?: Deadline | null;
 }) {
   const bgRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -65,6 +68,8 @@ export function Hero({
       </div>
       {/* gradient overlay slate 70% -> 20% */}
       <div aria-hidden="true" className="hero-overlay absolute inset-0" />
+
+      <FloatingDeadline deadline={deadline ?? null} />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 pt-28 sm:px-6 sm:pb-24 sm:pt-32">
         <h1 className="anim-fade-up delay-1 mt-4 max-w-4xl font-head text-[25px] font-bold leading-tight text-white sm:text-[40px] md:text-[50px]">

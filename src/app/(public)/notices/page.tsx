@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { getSheetAnnouncements } from "@/lib/sheets";
 import { PageHeader, Card, Badge } from "@/components/ui";
 import { Reveal } from "@/components/reveal";
 
@@ -8,11 +9,16 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Notices" };
 
 export default async function NoticesPage() {
-  const announcements = await prisma.announcement.findMany({
-    where: { scope: "PUBLIC", OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
-    orderBy: { publishedAt: "desc" },
-    take: 30,
-  });
+  const [sheetAnnouncements, dbAnnouncements] = await Promise.all([
+    getSheetAnnouncements(),
+    prisma.announcement.findMany({
+      where: { scope: "PUBLIC", OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      orderBy: { publishedAt: "desc" },
+      take: 30,
+    }),
+  ]);
+
+  const announcements = sheetAnnouncements.length > 0 ? sheetAnnouncements : dbAnnouncements;
 
   return (
     <div className="bg-white">

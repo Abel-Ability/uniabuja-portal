@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  CalendarDays,
   Cloud,
   CloudFog,
   CloudLightning,
@@ -21,16 +20,9 @@ import {
 } from "lucide-react";
 
 // Local Abuja date/time, weather, air quality, sunrise/sunset, the next
-// academic-calendar event, the next public holiday and a 5-day forecast.
+// public holiday and a 5-day forecast.
 // Weather + air quality come from Open-Meteo (free, no API key) and are cached
 // for 10 minutes; holidays (Nager date API) are cached for 24 hours.
-
-export type AcademicNext = {
-  title: string;
-  entryType: string;
-  startsOn: string;
-  endsOn: string;
-};
 
 const LAGOS = "Africa/Lagos";
 
@@ -76,17 +68,6 @@ const WEATHER: Record<number, { label: string; icon: LucideIcon; tone: string }>
   95: { label: "Thunderstorm", icon: CloudLightning, tone: "text-violet-600" },
   96: { label: "Storm with hail", icon: CloudLightning, tone: "text-violet-600" },
   99: { label: "Severe storm", icon: CloudLightning, tone: "text-violet-600" },
-};
-
-const ENTRY_LABELS: Record<string, string> = {
-  SESSION: "Session",
-  REGISTRATION: "Registration",
-  FEE_DEADLINE: "Fee deadline",
-  EXAM: "Exams",
-  HOLIDAY: "Break",
-  CONVOCATION: "Convocation",
-  NYSC: "NYSC",
-  RESULT: "Results",
 };
 
 type WeatherPayload = {
@@ -247,7 +228,7 @@ function MiniStat({ icon: Icon, value, label }: { icon: LucideIcon; value: strin
   );
 }
 
-export function NowWidget({ academicNext }: { academicNext: AcademicNext | null }) {
+export function NowWidget() {
   const [now, setNow] = useState<Date | null>(null);
 
   // Hydration-safe live clock in Abuja time; UTC badge is static (Lagos is UTC+1).
@@ -335,12 +316,10 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
   const weatherInfo = WEATHER[code] ?? { label: "Weather", icon: Sun, tone: "text-amber-500" };
   const WeatherIcon = weatherInfo.icon;
 
-  const entryLabel = academicNext ? (ENTRY_LABELS[academicNext.entryType] ?? "Upcoming") : null;
-
   return (
     <aside
       aria-label="Abuja date, time, weather, air quality and key dates"
-      className="pointer-events-none fixed right-4 top-24 z-30 hidden w-80 rounded-2xl border border-white/70 bg-white/90 py-4 pl-4 pr-3 text-slate shadow-lg backdrop-blur-md md:block"
+      className="pointer-events-none fixed right-20 top-24 z-30 hidden w-80 rounded-2xl border border-white/70 bg-white/40 py-4 pl-4 pr-3 text-slate shadow-lg backdrop-blur-md md:block"
     >
       {/* Date / time */}
       <div className="text-right">
@@ -397,31 +376,18 @@ export function NowWidget({ academicNext }: { academicNext: AcademicNext | null 
         </div>
       ) : null}
 
-      {/* Key dates */}
-      {academicNext || holiday ? (
+      {/* Upcoming public holiday */}
+      {holiday ? (
         <div className="mt-3 space-y-1.5 border-t border-slate/10 pt-3">
-          {academicNext ? (
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate">
-                <CalendarDays className="h-4 w-4 shrink-0 text-brand-strong" aria-hidden="true" />
-                <span className="truncate">{academicNext.title}</span>
-              </span>
-              <span className="shrink-0 rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-bold text-brand-strong">
-                {entryLabel} · {daysUntil(academicNext.startsOn)}d
-              </span>
-            </div>
-          ) : null}
-          {holiday ? (
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate">
-                <Flag className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
-                <span className="truncate">{holiday.localName}</span>
-              </span>
-              <span className="shrink-0 rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold text-gold">
-                {daysUntil(holiday.date)}d
-              </span>
-            </div>
-          ) : null}
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-slate">
+              <Flag className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
+              <span className="truncate">{holiday.localName}</span>
+            </span>
+            <span className="shrink-0 rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold text-gold">
+              {daysUntil(holiday.date)}d
+            </span>
+          </div>
         </div>
       ) : null}
 

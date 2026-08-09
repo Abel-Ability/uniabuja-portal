@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getStandardLevies, getProgrammeTuition } from "@/lib/sheets";
 import { formatMoney } from "@/lib/utils";
 import { PageHeader, Card, PillLink, Table } from "@/components/ui";
 import { Reveal } from "@/components/reveal";
@@ -52,9 +53,23 @@ const CHANNELS = [
 ];
 
 export default async function FeesPage() {
-  const programmes = await prisma.programme.findMany({
-    orderBy: [{ programmeType: "asc" }, { code: "asc" }],
-  });
+  const [programmes, sheetLevies, sheetTuition] = await Promise.all([
+    prisma.programme.findMany({
+      orderBy: [{ programmeType: "asc" }, { code: "asc" }],
+    }),
+    getStandardLevies(),
+    getProgrammeTuition(),
+  ]);
+
+  // Prefer Google Sheets; fall back to the hardcoded list when the tab is
+  // absent or empty, so the page never renders without fee items.
+  const feeItems =
+    sheetLevies.length > 0
+      ? sheetLevies.map((l) => ({ title: l.title, amount: l.amountNaira, note: l.note }))
+      : FEE_ITEMS;
+
+  // Overlay sheet tuition (per annum, naira) on the DB programmes by code.
+  const tuitionByCode = new Map(sheetTuition.map((t) => [t.code, t.tuitionPerAnnumNaira * 100]));
 
   return (
     <div className="bg-white">
@@ -73,7 +88,7 @@ export default async function FeesPage() {
             </h2>
           </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEE_ITEMS.map((f, i) => (
+            {feeItems.map((f, i) => (
               <Reveal key={f.title} delay={i * 80}>
                 <Card className="card-lift flex h-full flex-col gap-1">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate/75">
@@ -108,7 +123,7 @@ export default async function FeesPage() {
                   </td>
                   <td className="px-4 py-3 text-slate/70">{p.durationYears} years</td>
                   <td className="px-4 py-3 font-head font-bold text-slate">
-                    {formatMoney(p.tuitionCents)}
+                    {formatMoney(tuitionByCode.get(p.code) ?? p.tuitionCents)}
                   </td>
                 </tr>
               ))}
