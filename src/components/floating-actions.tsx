@@ -65,7 +65,7 @@ export function FloatingActions() {
             href={href}
             title={label}
             aria-label={label}
-            className="group flex items-center gap-2 rounded-full bg-white/90 py-2.5 pl-3 pr-3 text-slate opacity-70 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-brand-strong hover:text-white hover:opacity-100 hover:shadow-lg focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
+            className="group flex items-center gap-2 rounded-full bg-white/90 py-2.5 pl-3 pr-3 text-gold opacity-70 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-brand-strong hover:text-white hover:opacity-100 hover:shadow-lg focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
           >
             <Icon className="h-5 w-5 shrink-0" />
             <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 group-hover:max-w-[120px]">
