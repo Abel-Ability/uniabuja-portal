@@ -12,10 +12,10 @@ export function Footer() {
   return (
     <footer className="bg-white text-brand-strong">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
-        <div className="mx-auto max-w-5xl text-sm text-brand-strong">
+        <div className="mx-auto max-w-5xl text-sm text-slate">
           <div className="flex flex-col items-center justify-center gap-y-3 text-center">
             <div className="flex flex-col items-center gap-x-4 gap-y-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-              <h3 className="font-head text-sm font-semibold text-brand-strong">
+              <h3 className="font-head text-sm font-semibold text-gold">
                 Quick Links
               </h3>
               <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
@@ -26,7 +26,7 @@ export function Footer() {
                     </span>
                     <Link
                       href={href}
-                      className="transition-colors hover:text-gold"
+                      className="transition-colors hover:text-brand-strong"
                     >
                       {label}
                     </Link>
@@ -36,7 +36,7 @@ export function Footer() {
             </div>
 
             <div className="flex flex-col items-center gap-x-4 gap-y-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-              <h3 className="font-head text-sm font-semibold text-brand-strong">
+              <h3 className="font-head text-sm font-semibold text-gold">
                 Contact
               </h3>
               <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
