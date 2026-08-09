@@ -53,12 +53,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-col items-center gap-1.5 border-t border-white/15 pt-3 text-center">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 border-t border-white/15 pt-3 text-center">
           <img
             src="https://drive.google.com/thumbnail?id=1rovoohmsc10VxMnig2NbrDv5_aaH9ukJ"
             alt="Capacity Building and Support logo"
-            width={48}
-            height={48}
+            width={36}
+            height={36}
             style={{ objectFit: "contain" }}
           />
           <p className="text-xs text-white/60">
