@@ -1,0 +1,950 @@
+// University of Abuja (Yakubu Gowon University) — Unified Academic & Administrative Portal
+// Prisma schema for the demo build. Uses SQLite for local dev; PostgreSQL in production.
+// NOTE: SQLite connector does not support enums, so all enum-like fields are String
+// constants validated in application code (see src/lib/constants.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================================
+// AUTH & CORE
+// ============================================================
+
+model User {
+  id               String        @id @default(cuid())
+  username         String        @unique // registration number, staff no, or email
+  email            String        @unique
+  passwordHash     String
+  role             String // one of Role enum values in constants.ts
+  firstName        String
+  lastName         String
+  fullName         String
+  phone            String?
+  registrationNo   String? @unique
+  staffNo          String? @unique
+  jambNo           String?
+  programmeId      String?
+  programme        Programme?    @relation(fields: [programmeId], references: [id])
+  status           String @default("ACTIVE") // ACTIVE | SUSPENDED | GRADUATED | INACTIVE
+  mustChangePassword Boolean @default(false)
+  mfaEnabled       Boolean @default(false)
+  mfaSecret        String? // base32 TOTP secret (self-service, demo)
+  failedAttempts   Int    @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+    sessions              Session[]
+    passwordHistory       PasswordHistory[]
+  applications          Application[]
+  invoices              Invoice[]
+  payments              Payment[]
+  feeAccount            FeeAccount?
+  scholarshipsAwarded   Scholarship[]        @relation("ScholarshipStudent")
+  scholarshipsApproved  Scholarship[]        @relation("ScholarshipApprover")
+  waiversAwarded        Waiver[]             @relation("WaiverStudent")
+  waiversApproved       Waiver[]             @relation("WaiverApprover")
+  paymentPlans          PaymentPlan[]
+  registrations         CourseRegistration[]
+  resultsAsStudent      Result[]             @relation("ResultStudent")
+  resultsSubmitted      Result[]             @relation("ResultSubmitter")
+  resultsApproved1      Result[]             @relation("ResultApprover1")
+  resultsApproved2      Result[]             @relation("ResultApprover2")
+  misconductLogged      MisconductCase[]     @relation("MisconductStudent")
+  misconductDecided     MisconductCase[]     @relation("MisconductDecider")
+  appeals               Appeal[]
+  hostelApplications    HostelApplication[]
+  maintenanceRequests   MaintenanceRequest[]
+  transcriptRequests    TranscriptRequest[]
+  staffProfile          StaffProfile?
+  clearanceRequests     ClearanceRequest[]
+  clearanceSignedOff    ClearanceItem[]      @relation("ClearanceSigner")
+  convocations          Convocation[]
+  alumniProfile         AlumniProfile?
+  alumniDonations       AlumniDonation[]
+  libraryLoans          LibraryLoan[]
+  libraryHolds          LibraryHold[]
+  pgApplications        PGApplication[]
+  supervisorAssignments SupervisorAssignment[] @relation("Supervisor")
+  pgStudentsSupervised  SupervisorAssignment[] @relation("PGStudent")
+  theses                Thesis[]
+  siwesRecords          SIWESRecord[]
+  visitationReports     VisitationReport[]   @relation("VisitationCoordinator")
+  nyscRecords           NYSCRecord[]
+  notifications         Notification[]
+  notificationPreference NotificationPreference?
+  helpTickets           HelpTicket[]
+  chatTranscripts       ChatTranscript[]
+  documentsAuthored     Document[]
+  consents              Consent[]
+  dataSubjectRequests   DataSubjectRequest[]
+  breachLogs            BreachLog[]
+  idCards               IdCard[]
+  enrolmentLmsLogs      LmsSyncLog[]
+  researchOutputs       ResearchOutput[]
+  graduationRecord      GraduationRecord?
+  auditApprovals        ClearanceItemApprovalLog[] @relation("ClearanceApprover")
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  tokenHash     String   @unique
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip            String?
+  userAgent     String?
+  lastActiveAt  DateTime @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  mfaVerifiedAt DateTime?
+  stepUpUntil   DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Append-only audit trail. No UPDATE/DELETE through the application layer.
+model AuditLog {
+  id            String   @id @default(cuid())
+  actorUserId   String?
+  actorUsername String?
+  actorRole     String?
+  sessionId     String?
+  action        String // LOGIN | CREATE | READ | UPDATE | DELETE | APPROVE | PAY | EXPORT | VERIFY | CONFIG | REVOKE ...
+  module        String
+  targetType    String?
+  targetId      String?
+  before        Json?
+  after         Json?
+  ip            String?
+  userAgent     String?
+  prevHash      String?
+  hash          String @unique
+  createdAt     DateTime @default(now())
+}
+
+model FeatureFlag {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  enabled   Boolean  @default(false)
+  note      String?
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// ACADEMIC CALENDAR & PROGRAMMES
+// ============================================================
+
+model AcademicCalendarEntry {
+  id       String  @id @default(cuid())
+  title    String
+  entryType String // SESSION | REGISTRATION | FEE_DEADLINE | EXAM | HOLIDAY | CONVOCATION | NYSC | RESULT
+  startsOn DateTime
+  endsOn   DateTime
+  scope    String  @default("PUBLIC") // PUBLIC | STAFF
+  published Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ============================================================
+// ADMISSIONS (Module 1)
+// ============================================================
+
+model Programme {
+  id           String  @id @default(cuid())
+  code         String  @unique
+  name         String
+  programmeType String // UTME | DIRECT_ENTRY | PG | DISTANCE_LEARNING
+  durationYears Int
+  tuitionCents Int
+  capacity     Int @default(200)
+  applications Application[]
+  pgApplications PGApplication[]
+  users        User[]
+}
+
+model Application {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  programmeId   String
+  programme     Programme @relation(fields: [programmeId], references: [id])
+  jambNo        String?
+  status        String    @default("DRAFT") // DRAFT | SUBMITTED | SCREENING | PENDING_CAPS | ADMITTED | REJECTED | WITHDRAWN
+  capsStatus    String?   // e.g. PENDING | ACCEPTED | REJECTED
+  eligibility   Json?     // rules engine result
+  nipedsStatus  String?   // UNVERIFIED | VERIFIED | MISMATCH
+  parentConsent Boolean   @default(false)
+  submittedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  documents     DocumentUpload[]
+  offers        AdmissionOffer[]
+}
+
+model DocumentUpload {
+  id                String   @id @default(cuid())
+  applicationId     String?
+  application       Application? @relation(fields: [applicationId], references: [id])
+  userId            String
+  kind              String // RESULT_SLIP | CERTIFICATE | PASSPORT | EVIDENCE | THESIS | REFEREE
+  fileName          String
+  mimeType          String
+  sizeBytes         Int
+  checksum          String
+  verificationStatus String @default("UNVERIFIED") // UNVERIFIED | VERIFIED | MISMATCH
+  storageRef        String
+  createdAt         DateTime @default(now())
+}
+
+model AdmissionOffer {
+  id            String     @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id])
+  programmeId   String
+  offeredOn     DateTime   @default(now())
+  accepted      Boolean?
+  acceptedOn    DateTime?
+}
+
+// ============================================================
+// FEES (Module 2)
+// ============================================================
+
+model FeeAccount {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  balanceCents   Int      @default(0)
+  clearanceStatus Boolean @default(false) // fee clearance blocks registration & exams
+  updatedAt      DateTime @updatedAt
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  module      String // TUITION | ACCEPTANCE | HOSTEL | TRANSCRIPT | CONVOCATION | SIWES | LIBRARY
+  description String
+  amountCents Int
+  dueOn       DateTime
+  status      String   @default("OPEN") // OPEN | PAID | OVERDUE | WAIVED | PARTIAL
+  createdAt   DateTime @default(now())
+  payments    Payment[]
+  plan        PaymentPlan?
+  waiver      Waiver?
+}
+
+model Payment {
+  id         String    @id @default(cuid())
+  invoiceId  String?
+  invoice    Invoice?  @relation(fields: [invoiceId], references: [id])
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  module     String
+  reference  String    @unique // Remita/NIP RRR-like reference
+  amountCents Int
+  channel    String // CARD | TRANSFER | MOBILE_MONEY | USSD | REMITA
+  status     String    @default("PENDING") // PENDING | SUCCESS | FAILED | RECONCILED
+  tsaSwept   Boolean   @default(false) // reconciled against TSA/GIFMIS sweep timing
+  createdAt  DateTime  @default(now())
+}
+
+model Scholarship {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("ScholarshipStudent", fields: [userId], references: [id])
+  title         String
+  amountCents   Int
+  status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  approvedById  String?
+  approvedBy    User?    @relation("ScholarshipApprover", fields: [approvedById], references: [id])
+  decisionNote  String?
+  createdAt     DateTime @default(now())
+}
+
+model Waiver {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("WaiverStudent", fields: [userId], references: [id])
+  invoiceId    String?  @unique
+  invoice      Invoice? @relation(fields: [invoiceId], references: [id])
+  title        String
+  percent      Int
+  status       String   @default("PENDING")
+  approvedById String?
+  approvedBy   User?    @relation("WaiverApprover", fields: [approvedById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model PaymentPlan {
+  id           String  @id @default(cuid())
+  userId       String
+  user         User    @relation(fields: [userId], references: [id])
+  invoiceId    String  @unique
+  invoice      Invoice @relation(fields: [invoiceId], references: [id])
+  installments Int
+  intervalDays Int
+  amountPerInstallmentCents Int
+  status       String  @default("ACTIVE") // ACTIVE | COMPLETED | DEFAULTED
+}
+
+// ============================================================
+// ACADEMIC RECORDS (Modules 3, 8)
+// ============================================================
+
+model Course {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  title        String
+  units        Int
+  level        Int // 100-800
+  semester     Int // 1 | 2
+  capacity     Int @default(150)
+  prerequisites Json? // list of course codes
+  results      Result[]
+  registrations CourseRegistration[]
+  timetableEntries TimetableEntry[]
+}
+
+model CourseRegistration {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+  academicSession String // e.g. "2025/2026"
+  semester        Int
+  status          String   @default("ACTIVE") // ACTIVE | DROPPED | WITHDRAWN | WAITLISTED
+  lmsSynced       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  @@unique([userId, courseId, academicSession, semester])
+}
+
+model Result {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation("ResultStudent", fields: [userId], references: [id])
+  courseId       String
+  course         Course    @relation(fields: [courseId], references: [id])
+  academicSession String
+  semester       Int
+  caScore        Int?
+  examScore      Int?
+  total          Int?
+  grade          String? // A | B | C | D | E | F | P
+  gradeStatus    String    @default("SUBMITTED") // SUBMITTED | HOD_APPROVED | SENATE_APPROVED | FINAL
+  submittedById  String?
+  submittedBy    User?     @relation("ResultSubmitter", fields: [submittedById], references: [id])
+  approvedBy1Id  String?
+  approvedBy1    User?     @relation("ResultApprover1", fields: [approvedBy1Id], references: [id])
+  approvedBy2Id  String?
+  approvedBy2    User?     @relation("ResultApprover2", fields: [approvedBy2Id], references: [id])
+  approvedAt1    DateTime?
+  approvedAt2    DateTime?
+  published      Boolean   @default(false)
+  misconductRef  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@unique([userId, courseId, academicSession, semester])
+}
+
+model MisconductCase {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     User     @relation("MisconductStudent", fields: [studentId], references: [id])
+  title       String
+  status      String   @default("OPEN") // OPEN | INVESTIGATION | HEARING | DECISION | APPEALED | CLOSED
+  evidenceRef String?
+  decision    String?
+  decidedById String?
+  decidedBy   User?    @relation("MisconductDecider", fields: [decidedById], references: [id])
+  createdAt   DateTime @default(now())
+  appeals     Appeal[]
+}
+
+model Appeal {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  caseType   String // GRADE | MISCONDUCT
+  caseRef    String?
+  misconductCaseId String?
+  misconductCase   MisconductCase? @relation(fields: [misconductCaseId], references: [id])
+  grounds    String
+  status     String   @default("SUBMITTED") // SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED | CLOSED
+  createdAt  DateTime @default(now())
+}
+
+// ============================================================
+// ACCOMMODATION (Module 4)
+// ============================================================
+
+model Hostel {
+  id        String @id @default(cuid())
+  name      String
+  code      String @unique
+  capacity  Int
+  bedsAvailable Int
+  bedSpaces BedSpace[]
+  applications HostelApplication[]
+}
+
+model BedSpace {
+  id        String  @id @default(cuid())
+  hostelId  String
+  hostel    Hostel  @relation(fields: [hostelId], references: [id])
+  room      String
+  bed       String
+  status    String  @default("FREE") // FREE | ALLOCATED | RESERVED | MAINTENANCE
+  allocation HostelApplication?
+}
+
+model HostelApplication {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  academicSession String
+  hostelId      String?
+  hostel        Hostel?   @relation(fields: [hostelId], references: [id])
+  preference    Json?
+  status        String    @default("PENDING") // PENDING | ALLOCATED | WAITLISTED | REJECTED
+  allocatedBedId String?  @unique
+  allocatedBed  BedSpace? @relation(fields: [allocatedBedId], references: [id])
+  feeVerified   Boolean   @default(false) // accommodation-fee integration
+  allocatedAt   DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+model MaintenanceRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  hostelId    String?
+  title       String
+  description String
+  status      String   @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  createdAt   DateTime @default(now())
+}
+
+// ============================================================
+// TRANSCRIPTS & VERIFICATION (Module 5)
+// ============================================================
+
+model TranscriptRequest {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  purpose    String // JOB | FURTHER_STUDY | IMMIGRATION | OTHER
+  destinationInstitution String?
+  copies     Int       @default(1)
+  courier    Boolean   @default(false)
+  courierAddress String?
+  status     String    @default("SUBMITTED") // SUBMITTED | QUEUED | PROCESSING | ISSUED | COURIER_DISPATCHED
+  referenceNo String    @unique
+  signedKeyRef String? // reference to key in KMS/HSM, never the key itself
+  requestedAt DateTime  @default(now())
+  issuedAt   DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model VerificationRecord {
+  id           String   @id @default(cuid())
+  kind         String // RESULT | TRANSCRIPT | ID_CARD | CERTIFICATE
+  referenceNo  String
+  requesterOrg String?
+  result       String   @default("NOT_FOUND") // VALID | INVALID | NOT_FOUND
+  createdAt    DateTime @default(now())
+}
+
+// ============================================================
+// LMS INTEGRATION (Module 6)
+// ============================================================
+
+model LmsSyncLog {
+  id        String   @id @default(cuid())
+  kind      String // ENROLMENT | GRADE_PASSBACK
+  refType   String // COURSE_REGISTRATION | RESULT
+  refId     String
+  payload   Json?
+  status    String   @default("PENDING") // PENDING | SYNCED | FAILED
+  ranAt     DateTime?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ============================================================
+// PROFILES & RESEARCH (Module 7)
+// ============================================================
+
+model StaffProfile {
+  id           String @id @default(cuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id])
+  designation  String?
+  orcid        String?
+  scopUserId   String?
+  bio          String?
+  updatedAt    DateTime @updatedAt
+}
+
+model ResearchOutput {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  title     String
+  outputType String
+  doi       String?
+  repositoryUrl String?
+  year      Int
+}
+
+// ============================================================
+// GRADUATION, CONVOCATION & CLEARANCE (Modules 9, 12)
+// ============================================================
+
+model ClearanceRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  clearanceType String // GRADUATION | WITHDRAWAL | SIWES
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | HOLD
+  submittedAt DateTime @default(now())
+  completedAt DateTime?
+  items       ClearanceItem[]
+  approvals   ClearanceItemApprovalLog[]
+}
+
+model ClearanceItem {
+  id                String   @id @default(cuid())
+  clearanceRequestId String
+  clearanceRequest  ClearanceRequest @relation(fields: [clearanceRequestId], references: [id])
+  department        String // BURSARY | LIBRARY | HOSTEL | SPORTS | EXAMS | SIWES
+  status            String   @default("PENDING") // PENDING | SIGNED_OFF
+  signedOffById     String?
+  signedOffBy       User?    @relation("ClearanceSigner", fields: [signedOffById], references: [id])
+  signedOffAt       DateTime?
+  comment           String?
+}
+
+model ClearanceItemApprovalLog {
+  id          String @id @default(cuid())
+  itemId      String
+  department  String
+  approverId  String
+  approver    User   @relation("ClearanceApprover", fields: [approverId], references: [id])
+  at          DateTime @default(now())
+  requestId   String
+  request     ClearanceRequest @relation(fields: [requestId], references: [id])
+}
+
+model Convocation {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  session    String
+  gownSize   String?
+  feePaid    Boolean  @default(false)
+  seatNo     String?
+  guestSlots Int      @default(2)
+  registeredAt DateTime @default(now())
+}
+
+model GraduationRecord {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  academicSession String
+  awardClass      String? // FIRST_CLASS | SECOND_CLASS_UPPER | SECOND_CLASS_LOWER | THIRD_CLASS | PASS
+  cgpa            Float?
+  senateApprovedAt DateTime?
+  certificateRef  String?
+  @@index([userId])
+}
+
+// ============================================================
+// ALUMNI (Module 10)
+// ============================================================
+
+model AlumniProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  employmentStatus String? // EMPLOYED | UNEMPLOYED | SELF_EMPLOYED | STUDYING
+  employer     String?
+  sector       String?
+  optedIntoDirectory Boolean @default(false)
+  graduatedSession String?
+  joinedAt     DateTime @default(now())
+}
+
+model AlumniDonation {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  purpose     String
+  amountCents Int
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+// ============================================================
+// LIBRARY (Module 11)
+// ============================================================
+
+model LibraryHolding {
+  id            String @id @default(cuid())
+  title         String
+  author        String?
+  isbn          String?
+  category      String?
+  callNumber    String?
+  resourceType  String @default("BOOK") // BOOK | E_RESOURCE
+  totalCopies   Int    @default(1)
+  availableCopies Int @default(1)
+  loans         LibraryLoan[]
+  holds         LibraryHold[]
+}
+
+model LibraryLoan {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  holdingId  String
+  holding    LibraryHolding @relation(fields: [holdingId], references: [id])
+  borrowedAt DateTime  @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+  status     String    @default("OUT") // OUT | RETURNED | OVERDUE
+}
+
+model LibraryHold {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  holdingId String
+  holding   LibraryHolding @relation(fields: [holdingId], references: [id])
+  placedAt  DateTime @default(now())
+  status    String   @default("WAITING") // WAITING | FULFILLED | EXPIRED
+}
+
+// ============================================================
+// POSTGRADUATE SCHOOL & RESEARCH SUPERVISION (Module 13)
+// ============================================================
+
+model PGApplication {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  programmeId     String
+  programme       Programme @relation(fields: [programmeId], references: [id])
+  referee1Name    String?
+  referee1Email   String?
+  referee2Name    String?
+  referee2Email   String?
+  screeningStatus String   @default("SUBMITTED") // SUBMITTED | SCREENING | INTERVIEW | ADMITTED | REJECTED
+  interviewAt     DateTime?
+  interviewOutcome String?
+  createdAt       DateTime @default(now())
+}
+
+model SupervisorAssignment {
+  id           String   @id @default(cuid())
+  pgStudentId  String
+  pgStudent    User     @relation("PGStudent", fields: [pgStudentId], references: [id])
+  staffUserId  String
+  staff        User     @relation("Supervisor", fields: [staffUserId], references: [id])
+  programme    String?
+  workloadUnits Int     @default(1)
+  createdAt    DateTime @default(now())
+}
+
+model Thesis {
+  id                String    @id @default(cuid())
+  pgStudentId       String
+  pgStudent         User      @relation(fields: [pgStudentId], references: [id])
+  title             String
+  abstractText      String?
+  proposalStatus    String    @default("NOT_SUBMITTED")
+  proposalSubmittedAt DateTime?
+  defenseScheduledAt DateTime?
+  defenseOutcome    String?
+  plagiarismScore   Float?
+  externalExaminer  String?
+  status            String    @default("DRAFT") // DRAFT | PROPOSAL | SUPERVISION | PRE_DEFENSE | VIVA | APPROVED | FAILED
+  senateApprovedAt  DateTime?
+  createdAt         DateTime  @default(now())
+}
+
+// ============================================================
+// SIWES / INDUSTRIAL TRAINING (Module 14)
+// ============================================================
+
+model SIWESRecord {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  academicSession String
+  orgName        String
+  orgAddress     String?
+  startAt        DateTime?
+  endAt          DateTime?
+  status         String   @default("ACTIVE") // ACTIVE | SUBMITTED | SIGNED_OFF
+  logbookEntries LogbookEntry[]
+  visitationReports VisitationReport[]
+}
+
+model LogbookEntry {
+  id               String   @id @default(cuid())
+  siwesRecordId    String
+  siwesRecord      SIWESRecord @relation(fields: [siwesRecordId], references: [id])
+  weekNo           Int
+  activities       String
+  supervisorComment String?
+  submittedAt      DateTime @default(now())
+}
+
+model VisitationReport {
+  id             String   @id @default(cuid())
+  siwesRecordId  String
+  siwesRecord    SIWESRecord @relation(fields: [siwesRecordId], references: [id])
+  coordinatorUserId String
+  coordinator    User     @relation("VisitationCoordinator", fields: [coordinatorUserId], references: [id])
+  visitedAt      DateTime
+  notes          String
+  status         String   @default("SUBMITTED")
+}
+
+// ============================================================
+// NYSC MOBILISATION (Module 15)
+// ============================================================
+
+model NYSCBatch {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  mobilisationDeadline DateTime
+  status      String   @default("OPEN") // OPEN | COMPILING | SUBMITTED | ACCEPTED
+  records     NYSCRecord[]
+}
+
+model NYSCRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  batchId     String
+  batch       NYSCBatch @relation(fields: [batchId], references: [id])
+  status      String    @default("PENDING") // PENDING | SUBMITTED | QUERIED | ACCEPTED
+  submittedAt DateTime?
+  remark      String?
+  createdAt   DateTime  @default(now())
+  @@unique([userId, batchId])
+}
+
+// ============================================================
+// TIMETABLING & VENUE MANAGEMENT (Module 16)
+// ============================================================
+
+model Venue {
+  id        String @id @default(cuid())
+  name      String @unique
+  building  String
+  capacity  Int
+  equipment Json?
+  bookings  VenueBooking[]
+  timetables TimetableEntry[]
+}
+
+model VenueBooking {
+  id         String   @id @default(cuid())
+  venueId    String
+  venue      Venue    @relation(fields: [venueId], references: [id])
+  purpose    String // LECTURE | EXAM | EVENT
+  courseId   String?
+  day        String // ISO weekday
+  startTime  String // HH:mm
+  endTime    String
+  status     String   @default("CONFIRMED") // CONFIRMED | PENDING | CANCELLED
+  bookerUserId String?
+  createdAt  DateTime @default(now())
+}
+
+model TimetableEntry {
+  id              String   @id @default(cuid())
+  courseId        String?
+  course          Course?  @relation(fields: [courseId], references: [id])
+  venueId         String?
+  venue           Venue?   @relation(fields: [venueId], references: [id])
+  kind            String // LECTURE | EXAM
+  day             String
+  startTime       String
+  endTime         String
+  academicSession String
+  semester        Int
+  status          String   @default("PUBLISHED") // DRAFT | PUBLISHED | CANCELLED
+  createdAt       DateTime @default(now())
+}
+
+// ============================================================
+// COMMUNICATIONS, HELP & COMPLIANCE
+// ============================================================
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  category    String // NEWS | NOTICE | DEADLINE | ADMISSION | GENERAL
+  scope       String   @default("PUBLIC") // PUBLIC | STUDENT | STAFF | ROLE
+  visibleToRoles Json? // role list when scope = ROLE
+  authorId    String?
+  publishedAt DateTime @default(now())
+  expiresAt   DateTime?
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  channel   String // IN_APP | EMAIL | SMS
+  subject   String
+  body      String
+  status    String    @default("QUEUED") // QUEUED | SENT
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model NotificationPreference {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id])
+  allowEmail      Boolean @default(true)
+  allowSms        Boolean @default(true)
+  allowInApp      Boolean @default(true)
+  allowPromotional Boolean @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
+model MessageTemplate {
+  id     String @id @default(cuid())
+  code   String @unique
+  subject String
+  body   String
+}
+
+model HelpTicket {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  subject     String
+  body        String
+  priority    String   @default("NORMAL") // LOW | NORMAL | HIGH | URGENT
+  status      String   @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  assignedToId String?
+  slaDueAt    DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model ChatTranscript {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  query      String
+  confidence Float?
+  answer     String?
+  handedOff  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  title      String
+  category   String // GUIDELINE | HANDBOOK | FEE_SCHEDULE | POLICY | FORM
+  version    String
+  fileRef    String
+  authorId   String?
+  author     User?    @relation(fields: [authorId], references: [id])
+  publishedAt DateTime @default(now())
+}
+
+model Consent {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  purpose     String
+  granted     Boolean   @default(false)
+  grantedAt   DateTime?
+  withdrawnAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model DataSubjectRequest {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  requestType String // ACCESS | RECTIFY | ERASE | PORTABILITY
+  detail     String?
+  status     String   @default("SUBMITTED") // SUBMITTED | PROCESSING | COMPLETED | REJECTED
+  resolvedAt DateTime?
+  createdAt  DateTime @default(now())
+}
+
+ model FOIRequest {
+  id          String   @id @default(cuid())
+  requesterName String
+  requesterEmail String
+  subject     String
+  body        String
+  status      String   @default("SUBMITTED") // SUBMITTED | PROCESSING | COMPLETED | REJECTED
+  dueOn       DateTime?
+  responseAt  DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model BreachLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  category    String    @default("LOW") // LOW | MODERATE | HIGH | CRITICAL
+  description String
+  notifiedNdpc Boolean   @default(false)
+  status      String    @default("OPEN") // OPEN | INVESTIGATING | RESOLVED
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model ApiCredential {
+  id          String    @id @default(cuid())
+  provider    String // JAMB | WAEC | NIPEDS | REMITA | NIBSS | GIFMIS | ITEX | NYSC
+  label       String
+  keyHash     String
+  issuedById  String?
+  issuedAt    DateTime  @default(now())
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+}
+
+model IdCard {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  qrRef      String   @unique
+  kind       String // STUDENT | STAFF
+  issuedAt   DateTime @default(now())
+  revokedAt  DateTime?
+}

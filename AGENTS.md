@@ -1,0 +1,18 @@
+- npm run dev starts the Next.js app at http://localhost:3000
+- npm run build creates the production build
+- npm run start runs the built app
+- npm run lint runs ESLint
+- npm test runs Vitest once; npm run test:watch for watch mode
+- npm run db:generate generates the Prisma client
+- npm run db:migrate runs Prisma migrations (must follow db:generate)
+- npm run db:seed seeds demo data (requires prior migration)
+- npm run db:reset drops the SQLite DB (use with caution)
+- Database workflow: db:generate → db:migrate → db:seed
+- Demo accounts use password UniAbuja@2026 (forced change on first login)
+- MFA can be enabled via /login/mfa (TOTP)
+- RBAC logic lives in src/lib/constants.ts (use can() and visibleModules())
+- Generated Prisma client is in src/generated/prisma/; do not edit
+- Copy .env.example to .env and set SESSION_SECRET
+- Production uses PostgreSQL; see docs/MIGRATION.md for migration steps
+- CI pipeline runs lint → test → build; always run lint before test
+- Avoid manual SQLite modifications; they break the audit‑log chain
