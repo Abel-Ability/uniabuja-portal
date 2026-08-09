@@ -39,7 +39,7 @@ export function Footer() {
               <h3 className="font-head text-sm font-semibold text-gold">
                 Contact
               </h3>
-              <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+              <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-1">
                 <li className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 shrink-0" />
                   Airport Road, Abuja, FCT, Nigeria
