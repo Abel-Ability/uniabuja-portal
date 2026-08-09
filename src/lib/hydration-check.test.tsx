@@ -77,26 +77,22 @@ function check(name: string, el: React.ReactElement) {
   });
 }
 
-const PROGRAMMES = [
+const DEPARTMENTS = [
   {
-    id: "p1",
-    code: "UG-CSC-BSC",
-    name: "BSc Computer Science",
-    programmeType: "UTME",
-    facultyName: "Science",
+    id: "Sociology",
+    name: "Sociology",
+    faculty: "Social Sciences",
   },
   {
-    id: "p2",
-    code: "PG-CSC-MSC",
-    name: "MSc Computer Science",
-    programmeType: "PG",
-    facultyName: "Science",
+    id: "Physics",
+    name: "Physics",
+    faculty: "Physical Science",
   },
 ];
 
 describe("hydration smoke (client components)", () => {
   it("ApplyForm hydrates without attribute mismatches", async () => {
-    await check("ApplyForm", <ApplyForm programmes={PROGRAMMES} challenge={generateCaptcha()} />);
+    await check("ApplyForm", <ApplyForm departments={DEPARTMENTS} challenge={generateCaptcha()} />);
   });
 
   it("FloatingActions hydrates without attribute mismatches", async () => {

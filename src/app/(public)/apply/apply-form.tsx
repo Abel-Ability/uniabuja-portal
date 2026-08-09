@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { freshCaptchaChallenge, submitPublicApplication } from "./actions";
 import type { CaptchaChallenge } from "@/lib/captcha";
+import { DEPARTMENT_DEGREE_PREFIXES, DEFAULT_DEGREE_PREFIX } from "@/lib/constants";
 import { PillButton, PillLink } from "@/components/ui";
 
 export type ProgrammeOption = {
@@ -11,6 +12,12 @@ export type ProgrammeOption = {
   code: string;
   name: string;
   programmeType: string;
+};
+
+export type DepartmentOption = {
+  id: string;
+  name: string;
+  faculty: string;
 };
 
 const APPLICATION_TYPES: { value: string; label: string; hint: string }[] = [
@@ -29,11 +36,33 @@ const STEPS = [
 const inputCls =
   "w-full rounded-xl border border-slate/25 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30";
 
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function degreePrefixFor(departmentName: string): string {
+  return DEPARTMENT_DEGREE_PREFIXES[departmentName] ?? DEFAULT_DEGREE_PREFIX;
+}
+
+// The public form lists programmes derived from the chosen department, e.g.
+// Department of Sociology -> "B.A. Sociology", Department of Physics ->
+// "B.Sc. Physics". The programme code is deterministic so the server can
+// upsert a matching Programme row on submission.
+export function programmeOptionFor(department: DepartmentOption): ProgrammeOption {
+  const prefix = degreePrefixFor(department.name);
+  const name = `${prefix} ${department.name}`;
+  const code = `UG-${slugify(department.name).toUpperCase()}-${prefix.replace(/[^A-Za-z]/g, "").toUpperCase()}`;
+  return { id: code, code, name, programmeType: "UTME" };
+}
+
 export function ApplyForm({
-  programmes,
+  departments,
   challenge: challengeProp,
 }: {
-  programmes: ProgrammeOption[];
+  departments: DepartmentOption[];
   challenge: CaptchaChallenge;
 }) {
   const [step, setStep] = useState(0);
@@ -48,6 +77,7 @@ export function ApplyForm({
     dob: "",
     gender: "",
     applicationType: "",
+    department: "",
     programmeId: "",
     jambNo: "",
     jambScore: "",
@@ -67,10 +97,23 @@ export function ApplyForm({
     });
   }
 
-  const filtered = programmes.filter(
-    (p) => p.programmeType === draft.applicationType,
+  const groupedDepartments = useMemo(
+    () =>
+      departments.reduce<Record<string, DepartmentOption[]>>((acc, dept) => {
+        (acc[dept.faculty] ??= []).push(dept);
+        return acc;
+      }, {}),
+    [departments],
   );
-  const selectedProgramme = programmes.find((p) => p.id === draft.programmeId);
+
+  const selectedDepartment = departments.find((d) => d.id === draft.department);
+
+  // One programme per department: `${degree prefix} ${department}`.
+  const programmeOptions: ProgrammeOption[] = useMemo(
+    () => (selectedDepartment ? [programmeOptionFor(selectedDepartment)] : []),
+    [selectedDepartment],
+  );
+  const selectedProgramme = programmeOptions.find((p) => p.id === draft.programmeId);
 
   function goTo(next: number) {
     if (next < step) {
@@ -80,7 +123,7 @@ export function ApplyForm({
     if (step === 0 && (!draft.fullName.trim() || !draft.email.trim() || !draft.phone.trim())) {
       return;
     }
-    if (step === 1 && (!draft.applicationType || !draft.programmeId)) {
+    if (step === 1 && (!draft.applicationType || !draft.department || !draft.programmeId)) {
       return;
     }
     setStep(next);
@@ -99,7 +142,9 @@ export function ApplyForm({
     fd.set("dob", draft.dob);
     fd.set("gender", draft.gender);
     fd.set("applicationType", draft.applicationType);
+    fd.set("department", draft.department);
     fd.set("programmeId", draft.programmeId);
+    fd.set("programmeName", selectedProgramme?.name ?? draft.programmeId);
     fd.set("jambNo", draft.jambNo);
     fd.set("jambScore", draft.jambScore);
     fd.set("parentConsent", draft.parentConsent ? "on" : "");
@@ -338,6 +383,36 @@ export function ApplyForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
+              <label htmlFor="department" className="mb-1 block text-sm font-semibold text-slate">
+                Department
+              </label>
+              <select
+                id="department"
+                name="department"
+                value={draft.department}
+                onChange={(e) => {
+                  set("department")(e.target.value);
+                  set("programmeId")("");
+                }}
+                required
+                className={inputCls}
+              >
+                <option value="">Select department…</option>
+                {Object.entries(groupedDepartments).map(([faculty, depts]) => (
+                  <optgroup key={faculty} label={faculty}>
+                    {depts.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-slate/75">
+                Programme options are derived from your chosen department.
+              </p>
+            </div>
+            <div>
               <label htmlFor="programmeId" className="mb-1 block text-sm font-semibold text-slate">
                 Programme
               </label>
@@ -347,19 +422,24 @@ export function ApplyForm({
                 value={draft.programmeId}
                 onChange={(e) => set("programmeId")(e.target.value)}
                 required
-                disabled={!draft.applicationType}
+                disabled={!draft.department}
                 className={`${inputCls} disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 <option value="">
-                  {draft.applicationType ? "Select programme…" : "Choose an application type first"}
+                  {draft.department ? "Select programme…" : "Choose a department first"}
                 </option>
-                {filtered.map((p) => (
+                {programmeOptions.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.code} · {p.name}
+                    {p.name}
                   </option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-slate/75">
+                One programme per department, e.g. B.A. Sociology or B.Sc. Physics.
+              </p>
             </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="jambNo" className="mb-1 block text-sm font-semibold text-slate">
                 JAMB registration number <span className="font-normal text-slate/70">(optional)</span>
@@ -373,22 +453,22 @@ export function ApplyForm({
                 className={inputCls}
               />
             </div>
-          </div>
-          <div>
-            <label htmlFor="jambScore" className="mb-1 block text-sm font-semibold text-slate">
-              JAMB score <span className="font-normal text-slate/70">(optional)</span>
-            </label>
-            <input
-              id="jambScore"
-              name="jambScore"
-              type="number"
-              min={0}
-              max={400}
-              value={draft.jambScore}
-              onChange={(e) => set("jambScore")(e.target.value)}
-              placeholder="e.g. 250"
-              className={inputCls}
-            />
+            <div>
+              <label htmlFor="jambScore" className="mb-1 block text-sm font-semibold text-slate">
+                JAMB score <span className="font-normal text-slate/70">(optional)</span>
+              </label>
+              <input
+                id="jambScore"
+                name="jambScore"
+                type="number"
+                min={0}
+                max={400}
+                value={draft.jambScore}
+                onChange={(e) => set("jambScore")(e.target.value)}
+                placeholder="e.g. 250"
+                className={inputCls}
+              />
+            </div>
           </div>
         </fieldset>
       ) : null}
@@ -416,11 +496,15 @@ export function ApplyForm({
                 </dd>
               </div>
               <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate/70">Department</dt>
+                <dd className="mt-1 text-sm font-medium text-slate">
+                  {selectedDepartment?.name ?? "—"}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate/70">Programme</dt>
                 <dd className="mt-1 text-sm font-medium text-slate">
-                  {selectedProgramme
-                    ? `${selectedProgramme.code} · ${selectedProgramme.name}`
-                    : "—"}
+                  {selectedProgramme ? selectedProgramme.name : "—"}
                 </dd>
               </div>
               <div>

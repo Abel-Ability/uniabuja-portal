@@ -12,6 +12,149 @@ export const BRAND = {
   orgTagline: "The University for National Unity",
 } as const;
 
+// Degree prefix awarded per department for undergraduate entry. Unknown
+// departments fall back to DEFAULT_DEGREE_PREFIX. The programme shown on the
+// public apply form is `${prefix} ${department}` (e.g. "B.A. Sociology").
+export const DEFAULT_DEGREE_PREFIX = "B.Sc.";
+
+export const DEPARTMENT_DEGREE_PREFIXES: Record<string, string> = {
+  // Agriculture
+  "Agricultural Economics": "B.Agric.",
+  "Agricultural Extension and Rural Sociology": "B.Agric.",
+  "Agronomy": "B.Agric.",
+  "Animal Science": "B.Agric.",
+  "Crop and Environmental Protection": "B.Agric.",
+  "Dairy Science": "B.Agric.",
+  "Fisheries Aquaculture and Wildlife": "B.Agric.",
+  "Food Science and Technology": "B.Sc.",
+  "Forestry and Bioresources": "B.Agric.",
+  "Horticulture and Landscaping": "B.Agric.",
+  "Soil Science and Land Resources Management": "B.Agric.",
+  // Arts
+  "Arabic": "B.A.",
+  "Christian Studies and Religious Communication": "B.A.",
+  "English": "B.A.",
+  "History and Diplomatic Studies": "B.A.",
+  "Islamic Studies": "B.A.",
+  "Linguistics and African Languages": "B.A.",
+  "Philosophy": "B.A.",
+  "Theatre Arts": "B.A.",
+  // Communication and Media Studies
+  "Advertising": "B.Sc.",
+  "Broadcasting": "B.Sc.",
+  "Film and Multimedia Studies": "B.Sc.",
+  "Development Communication": "B.Sc.",
+  "Journalism and Media Studies": "B.Sc.",
+  "Information and Media Studies": "B.Sc.",
+  "Public Relations": "B.Sc.",
+  "Strategic Communication": "B.Sc.",
+  // Education
+  "Arts Education": "B.Ed.",
+  "Educational Foundations": "B.Ed.",
+  "Educational Management": "B.Ed.",
+  "Guidance and Counselling": "B.Ed.",
+  "Science and Environmental Education": "B.Ed.",
+  "Social Science Education": "B.Ed.",
+  // Engineering
+  "Aeronautical Engineering": "B.Eng.",
+  "Agricultural Engineering": "B.Eng.",
+  "Chemical Engineering": "B.Eng.",
+  "Civil Engineering": "B.Eng.",
+  "Electrical and Electronic Engineering": "B.Eng.",
+  "Mechanical Engineering": "B.Eng.",
+  "Railway Engineering": "B.Eng.",
+  // Environmental Sciences
+  "Architecture": "B.Sc.",
+  "Building": "B.Sc.",
+  "Estate Management": "B.Sc.",
+  "Industrial Design": "B.Sc.",
+  "Quantity Surveying": "B.Sc.",
+  "Surveying and Geo-informatics": "B.Sc.",
+  "Urban and Regional Planning": "B.Sc.",
+  // Geography and Atmospheric Sciences
+  "Environmental Management": "B.Sc.",
+  "Geography": "B.Sc.",
+  "Meteorology and Climate Science": "B.Sc.",
+  "Remote Sensing and Geospatial Science": "B.Sc.",
+  // Law
+  "Islamic Law": "LL.B.",
+  "Jurisprudence and International Law": "LL.B.",
+  "Private and Property Law": "LL.B.",
+  "Public Law": "LL.B.",
+  // Life Science
+  "Biochemistry": "B.Sc.",
+  "Biological Sciences": "B.Sc.",
+  "Botany": "B.Sc.",
+  "Zoology": "B.Sc.",
+  "Microbiology": "B.Sc.",
+  // Management Sciences
+  "Accounting": "B.Sc.",
+  "Banking and Finance": "B.Sc.",
+  "Business Administration": "B.Sc.",
+  "Entrepreneurship Studies": "B.Sc.",
+  "Hospitality and Tourism Management": "B.Sc.",
+  "Public Administration": "B.Sc.",
+  // Pharmaceutical Sciences
+  "Clinical Pharmacy and Pharmacy Administration": "B.Pharm.",
+  "Pharmaceutical and Medicinal Chemistry": "B.Pharm.",
+  "Pharmaceutical Microbiology and Biotechnology": "B.Pharm.",
+  "Pharmaceutics and Pharmaceutical Technology": "B.Pharm.",
+  "Pharmacognosy and Ethnopharmacy": "B.Pharm.",
+  "Pharmacology and Toxicology": "B.Pharm.",
+  // Physical Science
+  "Chemistry": "B.Sc.",
+  "Computer Science": "B.Sc.",
+  "Geology and Gemology": "B.Sc.",
+  "Mathematics": "B.Sc.",
+  "Physics": "B.Sc.",
+  "Statistics": "B.Sc.",
+  // Social Sciences
+  "Economics": "B.Sc.",
+  "Library and Information Science": "B.Sc.",
+  "Political Science and International Relations": "B.A.",
+  "Sociology": "B.A.",
+  // Veterinary Medicine
+  "Animal Health and Production": "DVM",
+  "Theriogenology": "DVM",
+  "Veterinary Anatomy": "DVM",
+  "Veterinary Medicine": "DVM",
+  "Veterinary Microbiology": "DVM",
+  "Veterinary Parasitology and Entomology": "DVM",
+  "Veterinary Pathology": "DVM",
+  "Veterinary Pharmacology and Toxicology": "DVM",
+  "Veterinary Physiology and Biochemistry": "DVM",
+  "Veterinary Public Health and Preventive Medicine": "DVM",
+  "Veterinary Surgery": "DVM",
+  // CHS - Basic Clinical Sciences
+  "Chemical Pathology": "B.Sc.",
+  "Haematology and Blood Transfusion": "B.Sc.",
+  "Histopathology and Forensic Medicine": "B.Sc.",
+  "Medical Microbiology and Parasitology": "B.Sc.",
+  "Pharmacology and Therapeutics Medicine": "B.Sc.",
+  // CHS - Basic Medical Sciences
+  "Anatomical Sciences": "B.Sc.",
+  "Human Physiology": "B.Sc.",
+  "Medical Biochemistry": "B.Sc.",
+  // CHS - Clinical Sciences
+  "Anaesthesia": "MBBS",
+  "Community Medicine": "MBBS",
+  "Internal Medicine": "MBBS",
+  "Obstetrics and Gynaecology": "MBBS",
+  "Ophthalmology": "MBBS",
+  "Orthopaedics and Trauma": "MBBS",
+  "Otorhinolaryngology": "MBBS",
+  "Paediatrics": "MBBS",
+  "Psychiatry": "MBBS",
+  "Radiology": "MBBS",
+  "Surgery": "MBBS",
+  // CHS - Nursing and Allied Health Sciences
+  "Medical Laboratory Sciences": "BMLS",
+  "Nursing Science": "B.NSc.",
+  "Public Health": "B.Sc.",
+  "Environmental Health Sciences": "B.Sc.",
+  "Optometry": "OD",
+};
+
 export const SESSION_COOKIE = "uap_session";
 export const SESSION_TTL_MS = 1000 * 60 * 60 * 4; // 4 hours
 export const IDLE_TIMEOUT_MS = 1000 * 60 * 30; // 30 min idle warning

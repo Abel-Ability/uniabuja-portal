@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { generateCaptcha } from "@/lib/captcha";
+import { getAcademicUnits } from "@/lib/sheets";
 import { PageHeader, Card } from "@/components/ui";
-import { ApplyForm, type ProgrammeOption } from "./apply-form";
+import { ApplyForm, type DepartmentOption } from "./apply-form";
 
 export const dynamic = "force-dynamic";
 
@@ -17,16 +17,15 @@ const NEXT_STEPS = [
 ];
 
 export default async function ApplyPage() {
-  const programmes = await prisma.programme.findMany({
-    orderBy: [{ programmeType: "asc" }, { code: "asc" }],
-  });
-
-  const options: ProgrammeOption[] = programmes.map((p) => ({
-    id: p.id,
-    code: p.code,
-    name: p.name,
-    programmeType: p.programmeType,
-  }));
+  const academicUnits = await getAcademicUnits().catch(() => null);
+  const departments: DepartmentOption[] = (academicUnits?.faculties ?? []).flatMap(
+    (faculty) =>
+      faculty.departments.map((name) => ({
+        id: name,
+        name,
+        faculty: faculty.college ? `${faculty.name} · ${faculty.college}` : faculty.name,
+      })),
+  );
 
   const challenge = generateCaptcha();
 
@@ -40,7 +39,7 @@ export default async function ApplyPage() {
       <div className="mx-auto max-w-6xl space-y-10 px-4 py-12 sm:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <ApplyForm programmes={options} challenge={challenge} />
+            <ApplyForm departments={departments} challenge={challenge} />
           </div>
 
           <aside className="space-y-4" aria-label="What happens next">

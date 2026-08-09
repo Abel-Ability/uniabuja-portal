@@ -69,7 +69,9 @@ export async function submitPublicApplication(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
   const applicationType = String(formData.get("applicationType") ?? "").toUpperCase();
-  const programmeId = String(formData.get("programmeId") ?? "");
+  const department = String(formData.get("department") ?? "").trim();
+  const programmeCode = String(formData.get("programmeId") ?? "").trim();
+  const programmeName = String(formData.get("programmeName") ?? "").trim();
   const jambNo = String(formData.get("jambNo") ?? "").trim();
   const jambScore = String(formData.get("jambScore") ?? "").trim();
   const dob = String(formData.get("dob") ?? "").trim();
@@ -84,14 +86,26 @@ export async function submitPublicApplication(
   if (!APPLICATION_TYPES.includes(applicationType)) {
     return { error: "Select an application type." };
   }
+  if (!department) return { error: "Select a department." };
+  if (!programmeCode) return { error: "Select a programme." };
   if (!dataConsent) {
     return { error: "Accept the data protection notice to submit." };
   }
 
-  const programme = await prisma.programme.findUnique({
-    where: { id: programmeId },
+  // Programme rows for department-derived programmes may not exist yet, so
+  // upsert by the deterministic code (e.g. UG-SOCIOLOGY-BA -> "B.A. Sociology").
+  const programme = await prisma.programme.upsert({
+    where: { code: programmeCode },
+    create: {
+      code: programmeCode,
+      name: programmeName || programmeCode,
+      programmeType: applicationType,
+      durationYears: applicationType === "PG" ? 2 : 4,
+      tuitionCents: 0,
+      capacity: 200,
+    },
+    update: {},
   });
-  if (!programme) return { error: "Select a programme." };
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {

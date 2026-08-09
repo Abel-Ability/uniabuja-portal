@@ -239,7 +239,7 @@ describe("module actions (integration)", () => {
 
 describe("public application flow (no session)", () => {
   const email = `smoke-applicant-${Date.now()}@uniabuja.edu.ng`;
-  let programmeId: string;
+  const programmeId = "UG-SOCIOLOGY-BA";
 
   async function submit() {
     const ch = await applyActions.freshCaptchaChallenge();
@@ -252,7 +252,9 @@ describe("public application flow (no session)", () => {
       dob: "2005-01-01",
       gender: "female",
       applicationType: "UTME",
+      department: "Sociology",
       programmeId,
+      programmeName: "B.A. Sociology",
       jambNo: "2026/99999999AB",
       jambScore: "240",
       parentConsent: "on",
@@ -261,12 +263,6 @@ describe("public application flow (no session)", () => {
       captchaAnswer: answer,
     }));
   }
-
-  beforeAll(async () => {
-    const prog = await prisma.programme.findFirst({ where: { programmeType: "UTME" } });
-    if (!prog) throw new Error("missing UTME programme in seed");
-    programmeId = prog.id;
-  });
 
   afterAll(async () => {
     const user = await prisma.user.findUnique({ where: { email } });
