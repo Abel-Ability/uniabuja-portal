@@ -1,0 +1,41 @@
+# Vercel CLI project linkage
+.vercel
+
+# Dependencies & build output (installed fresh by Vercel)
+node_modules
+.next
+.venv
+
+# Version control & tooling metadata
+.git
+.github
+.claude
+.agents
+.windsurf
+.kimchi
+
+# Local environment & database (secrets never uploaded)
+.env
+.env.*
+!.env.example
+data
+dev.db
+*.log
+
+# Local scratch / build & test artifacts (not needed at build time)
+*.txt
+*.docx
+*.mts
+tsconfig.tsbuildinfo
+next-env.d.ts
+orig_*
+-ErrorAction
+Support
+Appliactiion-Forn
+Dean.md
+HoD_Role.md
+Prompt_UniAbuja_Portal_v3.md
+uniabuja-portal-*.docx
+vercel-aliases.json
+vercel-inspect-output.json
+vitest.config.ts
