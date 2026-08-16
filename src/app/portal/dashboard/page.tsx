@@ -65,7 +65,7 @@ async function statsFor(role: string, userId: string) {
       s.approved = { label: "Results finalised", value: approved };
       break;
     }
-    case "HOD_DEAN": {
+    case "HOD": {
       const [pending] = await Promise.all([
         prisma.result.count({ where: { gradeStatus: "SUBMITTED" } }),
       ]);
@@ -151,7 +151,7 @@ async function statsFor(role: string, userId: string) {
     case "VC": {
       const [students, staff, applications, openTicketsAll, pendingClearance] = await Promise.all([
         prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
-        prisma.user.count({ where: { role: { in: ["LECTURER", "HOD_DEAN", "REGISTRY", "BURSARY", "STUDENT_AFFAIRS", "EXAMS_RECORDS", "PG_SCHOOL", "SIWES", "TIMETABLE", "IT_ADMIN", "DVC_OVERSIGHT"] }, status: "ACTIVE" } }),
+        prisma.user.count({ where: { role: { in: ["LECTURER", "HOD", "DEAN", "REGISTRY", "BURSARY", "STUDENT_AFFAIRS", "EXAMS_RECORDS", "PG_SCHOOL", "SIWES", "TIMETABLE", "IT_ADMIN", "DVC_OVERSIGHT", "SBC_CHAIRMAN", "GOVERNANCE_OVERSIGHT_MEMBER"] }, status: "ACTIVE" } }),
         prisma.application.count({ where: { status: { in: ["SUBMITTED", "SCREENING", "PENDING_CAPS", "ADMITTED"] } } }),
         prisma.helpTicket.count({ where: { status: { notIn: ["RESOLVED", "CLOSED"] } } }),
         prisma.clearanceRequest.count({ where: { status: { notIn: ["COMPLETED"] } } }),
@@ -247,7 +247,7 @@ export default async function DashboardPage() {
             <Link
               key={a.href}
               href={a.href}
-              className="group flex items-center justify-between rounded-xl border border-slate/10 bg-white p-4 shadow-sm transition-all hover:border-brand hover:shadow-md"
+              className="group flex items-center justify-between rounded-xl border border-slate/10 bg-white p-4 shadow-sm transition-all hover:border-brand hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80"
             >
               <span className="text-sm font-semibold text-slate group-hover:text-brand">
                 {a.label}

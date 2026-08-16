@@ -143,7 +143,7 @@ export default async function LibraryPage() {
     );
   }
 
-  if (["LECTURER", "HOD_DEAN", "REGISTRY", "BURSARY", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"].includes(user.role)) {
+  if (["LECTURER", "HOD", "REGISTRY", "BURSARY", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"].includes(user.role)) {
     const holdings = await prisma.libraryHolding.findMany({
       orderBy: { title: "asc" },
     });

@@ -109,44 +109,52 @@ async function main() {
         programmeId: pgProgramme.id,
       } }),
       tx.user.create({ data: {
-        username: "AB12", email: "lecturer@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "LECTURER", firstName: "Dr.", lastName: "Grace Adamu",
-        fullName: "Dr. Grace Adamu", phone: "+2348066666666", staffNo: "AB12",
+        username: "ACA3879", email: "aca3879@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "LECTURER", firstName: "Amina", lastName: "Ojo",
+        fullName: "Dr. Amina Ojo", phone: "90500000000", staffNo: "ACA3879",
+        faculty: "Physical Science", department: "Computer Science", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "CD34", email: "hod@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "HOD_DEAN", firstName: "Prof.", lastName: "Samuel Eze",
-        fullName: "Prof. Samuel Eze", phone: "+2348055555555", staffNo: "CD34",
+        username: "ACA140", email: "aca140@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "HOD", firstName: "Chidiebere", lastName: "Ibe",
+        fullName: "Prof. Chidiebere Ibe", phone: "08170000000", staffNo: "ACA140",
+        faculty: "Physical Science", department: "Computer Science", sex: "MALE",
       } }),
       tx.user.create({ data: {
-        username: "EF56", email: "registry@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "REGISTRY", firstName: "Mrs.", lastName: "Fatima Lawal",
-        fullName: "Mrs. Fatima Lawal", phone: "+2348044444444", staffNo: "EF56",
+        username: "SS6424", email: "ss6424@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "REGISTRY", firstName: "Ogechi", lastName: "Garba",
+        fullName: "Engr. Ogechi Garba", phone: "90500000000", staffNo: "SS6424",
+        department: "Registry", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "GH78", email: "bursary@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "BURSARY", firstName: "Mr.", lastName: "Ibrahim Musa",
-        fullName: "Mr. Ibrahim Musa", phone: "+2348033333333", staffNo: "GH78",
+        username: "SS5762", email: "ss5762@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "BURSARY", firstName: "Yemisi", lastName: "Fagbemi",
+        fullName: "Mrs. Yemisi Fagbemi", phone: "07030000000", staffNo: "SS5762",
+        department: "Bursary", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "IJ90", email: "studentaffairs@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT_AFFAIRS", firstName: "Ms.", lastName: "Ngozi Ade",
-        fullName: "Ms. Ngozi Ade", phone: "+2348022222222", staffNo: "IJ90",
+        username: "SS8229", email: "ss8229@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "STUDENT_AFFAIRS", firstName: "Tayo", lastName: "Mgbachi",
+        fullName: "Mrs. Tayo Mgbachi", phone: "90500000000", staffNo: "SS8229",
+        department: "Student Affairs Division", sex: "MALE",
       } }),
       tx.user.create({ data: {
-        username: "KL12", email: "exams@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "EXAMS_RECORDS", firstName: "Mr.", lastName: "Peter John",
-        fullName: "Mr. Peter John", phone: "+2348011111111", staffNo: "KL12",
+        username: "SS953", email: "ss953@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "EXAMS_RECORDS", firstName: "Nafisat", lastName: "Ojo",
+        fullName: "Ms. Nafisat Ojo", phone: "07000000000", staffNo: "SS953",
+        department: "Office of Vice-Chancellor", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "MN34", email: "pgschool@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "PG_SCHOOL", firstName: "Dr.", lastName: "Hauwa Bala",
-        fullName: "Dr. Hauwa Bala", phone: "+2348099999999", staffNo: "MN34",
+        username: "SS8026", email: "ss8026@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "PG_SCHOOL", firstName: "Salome", lastName: "Adeoye",
+        fullName: "Dr. Salome Adeoye", phone: "08130000000", staffNo: "SS8026",
+        department: "Office of Vice-Chancellor", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "OP56", email: "siwes@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "SIWES", firstName: "Engr.", lastName: "Danladi Kalu",
-        fullName: "Engr. Danladi Kalu", phone: "+2348088888888", staffNo: "OP56",
+        username: "SS6753", email: "ss6753@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "SIWES", firstName: "Simisola", lastName: "Coker",
+        fullName: "Mr. Simisola Coker", phone: "80600000000", staffNo: "SS6753",
+        department: "Office of Vice-Chancellor", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
         username: "QR78", email: "timetable@uniabuja.edu.ng",
@@ -154,22 +162,93 @@ async function main() {
         fullName: "Mrs. Chioma Obi", phone: "+2348077777777", staffNo: "QR78",
       } }),
       tx.user.create({ data: {
-        username: "ST90", email: "itadmin@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "IT_ADMIN", firstName: "Mr.", lastName: "Yusuf Abubakar",
-        fullName: "Mr. Yusuf Abubakar", phone: "+2348066666666", staffNo: "ST90",
+        username: "SS5103", email: "ss5103@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "IT_ADMIN", firstName: "Efosa", lastName: "Iroegbu",
+        fullName: "Mr. Efosa Iroegbu", phone: "08160000000", staffNo: "SS5103",
+        department: "Information Technology & Management Services (ITMS)", sex: "MALE",
       } }),
       tx.user.create({ data: {
-        username: "UV12", email: "dvc@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "DVC_OVERSIGHT", firstName: "Prof.", lastName: "Rose Adeyemi",
-        fullName: "Prof. Rose Adeyemi", phone: "+2348055555555", staffNo: "UV12",
+        username: "ACA5129", email: "aca5129@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "DVC_OVERSIGHT", firstName: "Simisola", lastName: "Usman",
+        fullName: "Prof. Simisola Usman", phone: "07090000000", staffNo: "ACA5129",
+        faculty: "CHS-Nursing and Allied Health Sciences", department: "Public Health", sex: "FEMALE",
       } }),
       tx.user.create({ data: {
-        username: "WX34", email: "vc@uniabuja.edu.ng",
-        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "VC", firstName: "Prof.", lastName: "Emeka Okonkwo",
-        fullName: "Prof. Emeka Okonkwo", phone: "+2348040000000", staffNo: "WX34",
+        username: "ACA3998", email: "aca3998@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "VC", firstName: "Ezinne", lastName: "Adeoye",
+        fullName: "Prof. Ezinne Adeoye", phone: "09040000000", staffNo: "ACA3998",
+        faculty: "Veterinary Medicine", department: "Veterinary Parasitology and Entomology", sex: "FEMALE",
+      } }),
+      tx.user.create({ data: {
+        username: "ACA8614", email: "aca8614@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "DEAN", firstName: "Michael", lastName: "Egbuna",
+        fullName: "Prof. Michael Egbuna", phone: "80600000000", staffNo: "ACA8614",
+        faculty: "Physical Science", department: "Computer Science", sex: "MALE",
+      } }),
+      tx.user.create({ data: {
+        username: "AC13", email: "sbc@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "SBC_CHAIRMAN", firstName: "Prof.", lastName: "Bala Ibrahim",
+        fullName: "Prof. Bala Ibrahim", phone: "+2348032223334", staffNo: "AC13",
+      } }),
+      tx.user.create({ data: {
+        username: "BD24", email: "gov@uniabuja.edu.ng",
+        passwordHash: hash, emailVerifiedAt: verifiedAt, role: "GOVERNANCE_OVERSIGHT_MEMBER", firstName: "Prof.", lastName: "Hauwa Sani",
+        fullName: "Prof. Hauwa Sani", phone: "+2348043334445", staffNo: "BD24",
       } }),
     ]);
-    const [applicant, student, pgStudent, lecturer, hod, , bursary, studentAffairs, exams, , siwes, timetable, itAdmin] = users;
+    const [
+      applicant, student, pgStudent, lecturer, hod, registry, bursary, studentAffairs, exams,
+      , siwes, timetable, itAdmin, dvc, , dean, sbc, gov,
+    ] = users;
+
+    // ---- governance & Senate (executive recovery milestone) ----
+    await tx.committeeMembership.createMany({
+      data: [
+        {
+          committee: "GOVERNANCE_OVERSIGHT", userId: dvc.id,
+          designation: "CHAIRMAN", status: "ACTIVE", startDate: new Date(),
+        },
+        {
+          committee: "GOVERNANCE_OVERSIGHT", userId: gov.id,
+          designation: "MEMBER", status: "ACTIVE", startDate: new Date(),
+        },
+      ],
+    });
+    await tx.senateMatter.create({
+      data: {
+        reference: "SBC/2026/0001",
+        title: "Approval of Second Semester Examination Results — Faculty of Science",
+        summary: "Consolidated results schedule submitted for Senate consideration.",
+        category: "RESULTS", status: "SUBMITTED", session: "2025/2026",
+        submittedById: registry.id,
+      },
+    });
+    const screenedMatter = await tx.senateMatter.create({
+      data: {
+        reference: "SBC/2026/0002",
+        title: "Revision of Postgraduate Tuition Fees for 2026/2027",
+        summary: "Proposed fee review tabled by the Bursary for Senate ratification.",
+        category: "FEES", status: "SCREENED", session: "2025/2026",
+        submittedById: registry.id, screenedById: registry.id, screenedAt: new Date(),
+      },
+    });
+    await tx.senateDecision.create({
+      data: {
+        matterId: screenedMatter.id,
+        resolution: "APPROVED",
+        decisionBody: "Committee resolved to recommend the revised fee schedule to Senate for ratification.",
+        recordedById: sbc.id, recordedAt: new Date(),
+      },
+    });
+    await tx.senateAgenda.create({
+      data: {
+        title: "Senate Meeting — Standing Committee on Examinations",
+        meetingDate: new Date("2026-09-15T10:00:00Z"),
+        session: "2025/2026", status: "PUBLISHED",
+        items: ["Approval of second semester results", "Admission quota for 2026/2027", "AOB"],
+        createdById: registry.id,
+      },
+    });
 
     // ---- courses ----
     const courseIds: Record<string, string> = {};
@@ -432,6 +511,7 @@ async function main() {
         { title: "Convocation ceremonies scheduled for August 2026", body: "Graduands must complete clearance and register for convocation before July 20.", category: "NOTICE", scope: "STUDENT", publishedAt: new Date("2026-07-06T09:00:00Z") },
         { title: "Beware of fake admission portals and SMS shortcode spoofing", body: "Only use official channels. We never request payment via SMS links.", category: "GENERAL", scope: "PUBLIC", publishedAt: new Date("2026-07-08T09:00:00Z") },
         { title: "Staff: mandatory MFA enrolment by month end", body: "All staff accounts must have MFA enabled before the August rollout.", category: "NOTICE", scope: "STAFF", publishedAt: new Date("2026-07-10T09:00:00Z") },
+        { title: "Faculty results review window", body: "Deans may now review second-semester results and return HoD-approved rows to departments where needed.", category: "NOTICE", scope: "ROLE", visibleToRoles: ["DEAN"], authorId: dean.id, publishedAt: new Date("2026-07-18T09:00:00Z") },
         { title: "Post-UTME screening dates announced", body: "First-choice candidates can now book screening slots on the portal. Screening runs from mid-August.", category: "ADMISSION", scope: "PUBLIC", publishedAt: new Date("2026-07-12T09:00:00Z") },
         { title: "Library extended hours for examination period", body: "The main library will stay open until midnight on weekdays throughout the examinations.", category: "NOTICE", scope: "PUBLIC", publishedAt: new Date("2026-07-14T09:00:00Z") },
         { title: "Chancellor's scholarship applications now open", body: "Merit and need-based awards for new and returning students. Apply before the end of the month.", category: "NEWS", scope: "PUBLIC", publishedAt: new Date("2026-07-16T09:00:00Z") },
@@ -475,7 +555,7 @@ async function main() {
     await tx.idCard.createMany({
       data: [
         { userId: student.id, qrRef: "UAID-STU-12/345ABC/678-01", kind: "STUDENT" },
-        { userId: lecturer.id, qrRef: "UAID-STF-AB12-01", kind: "STAFF" },
+        { userId: lecturer.id, qrRef: "UAID-STF-ACA3879-01", kind: "STAFF" },
       ],
     });
 

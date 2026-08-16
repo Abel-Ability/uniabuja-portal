@@ -6,13 +6,14 @@
 - npm run db:generate generates the Prisma client
 - npm run db:migrate runs Prisma migrations (must follow db:generate)
 - npm run db:seed seeds demo data (requires prior migration)
-- npm run db:reset drops the SQLite DB (use with caution)
-- Database workflow: db:generate → db:migrate → db:seed
+- npm run db:reset drops the database (use with caution)
+- npm run db:start starts the embedded PostgreSQL cluster (keep it running)
+- npm run db:sync-roster syncs staff/students into PostgreSQL from the Google Sheet (staff tab → staff users, students tab → students; safe to re-run, never overwrites passwords)
+- Database workflow: db:start → db:generate → db:migrate → db:seed
 - Demo accounts use password UniAbuja@2026 (forced change on first login)
 - MFA can be enabled via /login/mfa (TOTP)
 - RBAC logic lives in src/lib/constants.ts (use can() and visibleModules())
 - Generated Prisma client is in src/generated/prisma/; do not edit
-- Copy .env.example to .env and set SESSION_SECRET
-- Production uses PostgreSQL; see docs/MIGRATION.md for migration steps
+- Copy .env.example to .env and set SESSION_SECRET + DATABASE_URL
+- Local dev runs PostgreSQL via embedded-postgres (scripts/start-db.ts); see docs/MIGRATION.md
 - CI pipeline runs lint → test → build; always run lint before test
-- Avoid manual SQLite modifications; they break the audit‑log chain

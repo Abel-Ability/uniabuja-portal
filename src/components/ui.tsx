@@ -21,7 +21,7 @@ export function PillLink({
     outline:
       "border-2 border-brand-strong text-brand-strong hover:bg-brand-strong hover:text-white",
     light:
-      "bg-white/95 text-slate hover:bg-white shadow-md hover:shadow-lg hover:-translate-y-0.5",
+      "bg-white/95 text-slate hover:bg-white shadow-md hover:shadow-lg hover:-translate-y-0.5 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
   };
   return (
     <Link
@@ -52,7 +52,7 @@ export function PillButton({
       "bg-brand-strong text-white hover:bg-brand-dark shadow-md hover:shadow-lg",
     outline:
       "border-2 border-brand-strong text-brand-strong hover:bg-brand-strong hover:text-white",
-    light: "bg-white/95 text-slate hover:bg-white",
+    light: "bg-white/95 text-slate hover:bg-white dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
   };
   return (
     <button
@@ -74,7 +74,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-slate/10 bg-white p-5 shadow-sm ${className}`}
+      className={`rounded-2xl border border-slate/10 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-800/80 ${className}`}
     >
       {children}
     </div>
@@ -92,9 +92,9 @@ export function Badge({
     neutral: "bg-slate/10 text-slate",
     brand: "bg-brand-light text-slate-dark",
     slate: "bg-brand-strong text-white",
-    gold: "bg-amber-100 text-amber-800",
-    red: "bg-red-100 text-red-700",
-    amber: "bg-amber-100 text-amber-800",
+    gold: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+    red: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200",
+    amber: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
   };
   return (
     <span
@@ -121,6 +121,9 @@ const STATUS_TONES: Record<string, "neutral" | "brand" | "slate" | "gold" | "red
   PUBLISHED: "brand",
   PENDING: "gold",
   OPEN: "gold",
+  PARTIAL: "gold",
+  PAID: "brand",
+  WAIVED: "slate",
   SUBMITTED: "slate",
   QUEUED: "slate",
   PROCESSING: "slate",
@@ -212,7 +215,7 @@ export function PageHeader({
   breadcrumbs?: string[];
 }) {
   return (
-    <div className="bg-brand-strong px-4 py-10 text-white sm:px-8">
+    <div className="bg-brand-strong px-4 py-4 text-white sm:px-8">
       <div className="mx-auto max-w-6xl">
         {breadcrumbs?.length ? (
           <nav aria-label="Breadcrumb" className="mb-2 text-xs text-white/70">
@@ -275,5 +278,55 @@ export function EmptyState({
       <p className="font-head font-semibold text-slate">{title}</p>
       {body ? <p className="mt-1 text-sm text-slate/75">{body}</p> : null}
     </div>
+  );
+}
+
+export function Input({
+  className = "",
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      className={`w-full rounded-xl border border-slate/25 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500 ${className}`}
+      {...props}
+    />
+  );
+}
+
+export function Select({
+  options,
+  value,
+  onValueChange,
+  placeholder,
+  className = "",
+  children,
+  ...props
+}: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> & {
+  options?: { label: string; value: string }[];
+  value?: string | number;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <select
+      value={value ?? ""}
+      onChange={(e) => onValueChange?.(e.target.value)}
+      className={`w-full rounded-xl border border-slate/25 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30 dark:bg-slate-900/60 dark:text-slate-100 ${className}`}
+      {...props}
+    >
+      {placeholder ? (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      ) : null}
+      {options
+        ? options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))
+        : children}
+    </select>
   );
 }

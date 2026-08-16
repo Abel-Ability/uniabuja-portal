@@ -115,7 +115,7 @@ export default async function TranscriptsPage() {
     );
   }
 
-  if (user.role === "HOD_DEAN" || user.role === "BURSARY" || user.role === "DVC_OVERSIGHT" || user.role === "VC") {
+  if (user.role === "HOD" || user.role === "BURSARY" || user.role === "DVC_OVERSIGHT" || user.role === "VC") {
     const count = await prisma.transcriptRequest.count({ where: { status: { in: ["QUEUED", "PROCESSING"] } } });
     return (
       <div className="space-y-8">

@@ -113,7 +113,7 @@ describe("hydration smoke (client components)", () => {
   });
 
   it("LoginForm hydrates without attribute mismatches", async () => {
-    await check("LoginForm", <LoginForm challenge={generateCaptcha()} />);
+    await check("LoginForm", <LoginForm />);
   });
 
   it("MfaLoginForm hydrates without attribute mismatches", async () => {

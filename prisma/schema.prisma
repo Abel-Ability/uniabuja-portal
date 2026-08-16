@@ -39,6 +39,11 @@ model User {
   failedAttempts   Int    @default(0)
   lockedUntil      DateTime?
   lastLoginAt      DateTime?
+  department       String? // department snapshot (staff + student rosters)
+  faculty          String? // faculty snapshot (staff)
+  studentCategory  String? // UNDERGRADUATE | POSTGRADUATE | DISTANCE_LEARNING | REMEDIAL | INSTITUTE_OF_EDUCATION
+  sex              String? // MALE | FEMALE
+  dateOfBirth      DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -55,6 +60,7 @@ model User {
   waiversApproved       Waiver[]             @relation("WaiverApprover")
   paymentPlans          PaymentPlan[]
   registrations         CourseRegistration[]
+  registrationHeaders   Registration[]
   resultsAsStudent      Result[]             @relation("ResultStudent")
   resultsSubmitted      Result[]             @relation("ResultSubmitter")
   resultsApproved1      Result[]             @relation("ResultApprover1")
@@ -93,6 +99,24 @@ model User {
   researchOutputs       ResearchOutput[]
   graduationRecord      GraduationRecord?
   auditApprovals        ClearanceItemApprovalLog[] @relation("ClearanceApprover")
+  courseAssignments     CourseAssignment[]         @relation("AssignmentLecturer")
+  courseAssignmentsAssigned CourseAssignment[]     @relation("AssignmentAssigner")
+  courseTeamMemberships CourseAssignmentMember[]
+  levelCoordinators     LevelCoordinator[]         @relation("LevelCoordinatorHolder")
+  levelCoordinatorsAssigned LevelCoordinator[]     @relation("LevelCoordinatorAssigner")
+  levelAdvisorAssignments LevelAdvisorAssignment[] @relation("LevelAdviser")
+  levelAdvisorAssignmentsAssigned LevelAdvisorAssignment[] @relation("LevelAdviserAssigner")
+  appointmentsAsAppointee Appointment[]           @relation("AppointmentAppointee")
+  appointmentsProposed  Appointment[]             @relation("AppointmentProposer")
+  appointmentsApproved  Appointment[]             @relation("AppointmentApprover")
+  appointmentsRecorded  Appointment[]             @relation("AppointmentRecorder")
+  committeeMemberships  CommitteeMembership[]
+  resultFiles           ResultFile[]
+  resultCorrectionRequests ResultCorrectionRequest[]
+  senateMattersSubmitted SenateMatter[]            @relation("SenateMatterSubmitter")
+  senateMattersScreened SenateMatter[]             @relation("SenateMatterScreener")
+  senateDecisionsRecorded SenateDecision[]          @relation("SenateDecisionRecorder")
+  senateAgendasCreated  SenateAgenda[]             @relation("SenateAgendaCreator")
 }
 
 model Session {
@@ -190,6 +214,8 @@ model Programme {
   applications Application[]
   pgApplications PGApplication[]
   users        User[]
+  levelAdvisorAssignments LevelAdvisorAssignment[]
+  offerings    CourseOffering[]
 }
 
 model Application {
@@ -334,20 +360,51 @@ model Course {
   results      Result[]
   registrations CourseRegistration[]
   timetableEntries TimetableEntry[]
+  assignments  CourseAssignment[]
+  offerings    CourseOffering[]
 }
 
 model CourseRegistration {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
   courseId        String
-  course          Course   @relation(fields: [courseId], references: [id])
+  course          Course       @relation(fields: [courseId], references: [id])
   academicSession String // e.g. "2025/2026"
   semester        Int
-  status          String   @default("ACTIVE") // ACTIVE | DROPPED | WITHDRAWN | WAITLISTED
-  lmsSynced       Boolean  @default(false)
-  createdAt       DateTime @default(now())
+  status          String       @default("ACTIVE") // ACTIVE | DROPPED | WITHDRAWN | WAITLISTED
+  lmsSynced       Boolean      @default(false)
+  registrationId  String? // set once the registration is finalised (Registration header)
+  registration    Registration? @relation(fields: [registrationId], references: [id])
+  createdAt       DateTime     @default(now())
   @@unique([userId, courseId, academicSession, semester])
+  @@index([registrationId])
+}
+
+// A student course registration is an official academic transaction (header)
+// that owns ONE student, ONE session, ONE semester, ONE immutable registration
+// reference, ONE final status, ONE finalisation/lock event and ONE authoritative
+// total-unit value, over MANY CourseRegistration rows. It is created atomically
+// at finalisation. CourseRegistration rows created before finalisation (legacy
+// rows) have registrationId = NULL and remain valid.
+model Registration {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  registrationReference String   @unique // e.g. CR-2025-000001 — immutable, authoritative
+  academicSession       String // e.g. "2025/2026"
+  semester              Int
+  totalUnits            Int // authoritative total recalculated server-side at finalisation
+  status                String   @default("FINALIZED") // SUBMITTED | FINALIZED | LOCKED | CANCELLED
+  submittedAt           DateTime @default(now())
+  finalisedAt           DateTime?
+  lockedAt              DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  courseRegistrations   CourseRegistration[]
+
+  @@unique([userId, academicSession, semester])
+  @@index([userId])
 }
 
 model Result {
@@ -372,6 +429,7 @@ model Result {
   approvedAt1    DateTime?
   approvedAt2    DateTime?
   published      Boolean   @default(false)
+  resultKind     String    @default("NORMAL") // NORMAL | BACKLOG
   misconductRef  String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -824,6 +882,7 @@ model Announcement {
   body        String
   category    String // NEWS | NOTICE | DEADLINE | ADMISSION | GENERAL
   scope       String   @default("PUBLIC") // PUBLIC | STUDENT | STAFF | ROLE
+  faculty     String? // faculty-scoped visibility when scope = ROLE
   visibleToRoles Json? // role list when scope = ROLE
   authorId    String?
   publishedAt DateTime @default(now())
@@ -961,4 +1020,245 @@ model IdCard {
   kind       String // STUDENT | STAFF
   issuedAt   DateTime @default(now())
   revokedAt  DateTime?
+}
+
+// ============================================================
+// HOD / ACADEMIC MANAGEMENT (Module 17)
+// ============================================================
+
+model CourseAssignment {
+  id             String   @id @default(cuid())
+  courseId       String?
+  course         Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseCode     String
+  courseTitle    String
+  faculty        String?
+  department     String
+  lecturerId     String
+  lecturer       User     @relation("AssignmentLecturer", fields: [lecturerId], references: [id], onDelete: Restrict)
+  assignedById   String
+  assignedBy     User     @relation("AssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+  academicSession String
+  semester       Int
+  createdAt      DateTime @default(now())
+  teamMembers    CourseAssignmentMember[]
+
+  @@index([courseCode])
+  @@index([lecturerId])
+  @@index([department, academicSession])
+  @@unique([courseCode, academicSession, semester])
+}
+
+model CourseAssignmentMember {
+  id                 String   @id @default(cuid())
+  courseAssignmentId String
+  courseAssignment   CourseAssignment @relation(fields: [courseAssignmentId], references: [id], onDelete: Cascade)
+  lecturerId         String
+  lecturer           User     @relation(fields: [lecturerId], references: [id], onDelete: Restrict)
+  createdAt          DateTime @default(now())
+
+  @@index([lecturerId])
+  @@unique([courseAssignmentId, lecturerId])
+}
+
+model LevelCoordinator {
+  id             String   @id @default(cuid())
+  level          Int
+  department     String
+  academicSession String
+  coordinatorId  String
+  coordinator    User     @relation("LevelCoordinatorHolder", fields: [coordinatorId], references: [id], onDelete: Restrict)
+  assignedById   String
+  assignedBy     User     @relation("LevelCoordinatorAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([coordinatorId])
+  @@unique([level, department, academicSession])
+}
+
+model LevelAdvisorAssignment {
+  id             String    @id @default(cuid())
+  academicSession String
+  faculty        String?
+  department     String
+  programmeId    String?
+  programme      Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  level          Int
+  adviserId      String
+  adviser        User      @relation("LevelAdviser", fields: [adviserId], references: [id], onDelete: Restrict)
+  assignedById   String
+  assignedBy     User      @relation("LevelAdviserAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+  status         String    @default("ACTIVE") // ACTIVE | INACTIVE
+  startDate      DateTime?
+  endDate        DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([adviserId, status])
+  @@index([department, academicSession])
+  @@unique([department, academicSession, level, programmeId])
+}
+
+// ============================================================
+// GOVERNANCE: APPOINTMENTS, COMMITTEES & SENATE BUSINESS
+// ============================================================
+
+model Appointment {
+  id             String   @id @default(cuid())
+  role           String // HOD | DEAN | DIRECTOR_ACADEMIC_PLANNING ...
+  unit           String?
+  appointeeId    String
+  appointee      User     @relation("AppointmentAppointee", fields: [appointeeId], references: [id], onDelete: Restrict)
+  proposerId     String?
+  proposer       User?    @relation("AppointmentProposer", fields: [proposerId], references: [id], onDelete: SetNull)
+  approverId     String?
+  approver       User?    @relation("AppointmentApprover", fields: [approverId], references: [id], onDelete: SetNull)
+  recorderId     String?
+  recorder       User?    @relation("AppointmentRecorder", fields: [recorderId], references: [id], onDelete: SetNull)
+  status         String   @default("PROPOSED") // PROPOSED | APPROVED | RECORDED | REJECTED
+  academicSession String?
+  issuedAt       DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([appointeeId])
+  @@index([status])
+}
+
+model CommitteeMembership {
+  id          String   @id @default(cuid())
+  committee   String // GOVERNANCE_OVERSIGHT | ...
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designation String // CHAIRMAN | MEMBER
+  status      String   @default("ACTIVE") // ACTIVE | INACTIVE
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([committee, status])
+  @@unique([committee, userId])
+}
+
+model SenateMatter {
+  id            String   @id @default(cuid())
+  reference     String   @unique // e.g. SBC/2026/0001
+  title         String
+  summary       String
+  category      String
+  status        String   @default("SUBMITTED") // SUBMITTED | SCREENED | DECIDED | WITHDRAWN
+  session       String   @default("2025/2026")
+  submittedById String
+  submittedBy   User     @relation("SenateMatterSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  screenedById  String?
+  screenedBy    User?    @relation("SenateMatterScreener", fields: [screenedById], references: [id], onDelete: SetNull)
+  screenedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  decision      SenateDecision?
+
+  @@index([status])
+  @@index([session])
+}
+
+model SenateDecision {
+  id           String       @id @default(cuid())
+  matterId     String       @unique
+  matter       SenateMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  resolution   String // APPROVED | REJECTED | DEFERRED | AMENDED
+  decisionBody String
+  recordedById String
+  recordedBy   User         @relation("SenateDecisionRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+  recordedAt   DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([recordedById])
+}
+
+model SenateAgenda {
+  id          String   @id @default(cuid())
+  title       String
+  meetingDate DateTime
+  session     String   @default("2025/2026")
+  status      String   @default("DRAFT") // DRAFT | PUBLISHED | ADOPTED
+  items       Json?
+  createdById String
+  createdBy   User     @relation("SenateAgendaCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+}
+
+// ============================================================
+// RESULT PROCESSING: FILE UPLOAD & CORRECTIONS
+// ============================================================
+
+model ResultFile {
+  id             String   @id @default(cuid())
+  lecturerId     String
+  lecturer       User     @relation(fields: [lecturerId], references: [id], onDelete: Restrict)
+  kind           String   @default("NORMAL") // NORMAL | BACKLOG
+  academicSession String
+  semester       Int
+  courseCode     String
+  courseTitle    String
+  caMax          Int
+  contentType    String // CA | EXAM | BOTH
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  rawCsv         String
+  rowCount       Int
+  processedCount Int      @default(0)
+  failedCount    Int      @default(0)
+  status         String   @default("PROCESSED") // PROCESSED | PARTIAL | FAILED
+  errorSummary   String?
+  createdAt      DateTime @default(now())
+
+  @@index([lecturerId])
+}
+
+model ResultCorrectionRequest {
+  id              String   @id @default(cuid())
+  requesterId     String
+  requester       User     @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  academicSession String
+  semester        Int
+  courseCode      String
+  studentMatricNo String
+  studentName     String?
+  currentGrade    String?
+  requestedChange String
+  reason          String
+  status          String   @default("SUBMITTED") // SUBMITTED | APPROVED | REJECTED
+  createdAt       DateTime @default(now())
+
+  @@index([requesterId])
+  @@index([courseCode])
+}
+
+// ============================================================
+// COURSE OFFERINGS (HOD MANAGES WHAT IS ON OFFER PER SESSION)
+// ============================================================
+
+model CourseOffering {
+  id             String    @id @default(cuid())
+  courseId       String
+  course         Course    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  programmeId    String?
+  programme      Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  academicSession String
+  semester       Int
+  level          Int
+  status         String    @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([courseId])
+  @@index([programmeId])
+  @@unique([courseId, programmeId, academicSession, semester, level])
 }

@@ -27,7 +27,8 @@ const SERVICES = [
 
 const ROLES = [
   "Lecturer",
-  "HOD / Dean",
+  "Head of Department",
+  "Dean of Faculty",
   "Registry",
   "Bursary",
   "Exams & Records",
@@ -40,7 +41,7 @@ const ROLES = [
 
 export default function StaffPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Staff"
         title="Staff Portal"
@@ -92,7 +93,7 @@ export default function StaffPage() {
             <div className="flex h-full flex-col justify-center rounded-3xl bg-brand-strong p-6 text-white sm:p-10">
               <h2 className="font-head text-xl font-bold sm:text-2xl">Sign in to the staff portal</h2>
               <p className="mt-2 max-w-2xl text-sm text-white/80">
-                Sign in with your staff number (e.g. AB12) and portal password. Every
+                Sign in with your staff number (e.g. ACA9999) and portal password. Every
                 administrative action is recorded in a tamper-evident audit trail, and
                 high-risk actions require step-up authentication.
               </p>

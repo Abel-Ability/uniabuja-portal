@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSession } from "@/lib/session";
 import { computeCGPA, awardClass } from "@/lib/utils";
+import { isHodRole, hodPendingResultRows, hodScopedAppeals } from "@/lib/hod";
 import { PageHeader, Card, Table, StatCard, StatusBadge, EmptyState, Badge, SectionHeading } from "@/components/ui";
 import { GradeEntryForm } from "./grade-entry-form";
 import { ApproveResultButton } from "./approve-result-button";
+import { FinaliseResultButton } from "./finalise-result-button";
 import { FileAppealForm, ReviewAppealButton, AppealStatus } from "./appeal-form";
 import { LogMisconductForm, AdvanceMisconductButton } from "./misconduct-form";
+import { resultsForRole } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -133,7 +136,7 @@ export default async function ResultsPage() {
   }
 
   if (user.role === "LECTURER") {
-    const [submissions, registrations] = await Promise.all([
+    const [submissions, registrations, assignments] = await Promise.all([
       prisma.result.findMany({
         where: { submittedById: user.id },
         orderBy: { updatedAt: "desc" },
@@ -145,10 +148,24 @@ export default async function ResultsPage() {
         include: { course: true, user: true },
         orderBy: { createdAt: "asc" },
       }),
+      prisma.courseAssignment.findMany({
+        where: {
+          OR: [{ lecturerId: user.id }, { teamMembers: { some: { lecturerId: user.id } } }],
+        },
+        select: { courseCode: true, academicSession: true, semester: true },
+      }),
     ]);
+
+    // A lecturer only enters grades for courses they are assigned to (Main or
+    // Co-lecturer) for the exact session/semester. Unscoped registrations are
+    // filtered out so no unauthorised course is ever offered for grade entry.
+    const assignmentKeys = new Set(
+      assignments.map((a) => `${a.courseCode}|${a.academicSession}|${a.semester}`),
+    );
 
     const coursesMap = new Map<string, { id: string; code: string; title: string; students: { id: string; fullName: string }[] }>();
     for (const reg of registrations) {
+      if (!assignmentKeys.has(`${reg.course.code}|${reg.academicSession}|${reg.semester}`)) continue;
       const entry = coursesMap.get(reg.courseId) ?? { id: reg.courseId, code: reg.course.code, title: reg.course.title, students: [] };
       entry.students.push({ id: reg.userId, fullName: reg.user.fullName });
       coursesMap.set(reg.courseId, entry);
@@ -186,17 +203,33 @@ export default async function ResultsPage() {
     );
   }
 
-  if (user.role === "HOD_DEAN" || user.role === "EXAMS_RECORDS") {
-    const [pending, appeals] = await Promise.all([
-      prisma.result.findMany({
-        where: { gradeStatus: user.role === "HOD_DEAN" ? "SUBMITTED" : "HOD_APPROVED" },
-        orderBy: { updatedAt: "desc" },
-        take: 50,
-        include: { course: true, user: true, submittedBy: true },
-      }),
-      prisma.appeal.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { user: true } }),
+  if (isHodRole(user.role) || user.role === "EXAMS_RECORDS") {
+    const isHod = isHodRole(user.role);
+    // A HoD only sees SUBMITTED results for courses allocated to their own
+    // department and appeals filed by their own students; the Exams & Records
+    // unit keeps the full pipeline and appeal register.
+    const [pending, appeals, senateApproved] = await Promise.all([
+      isHod
+        ? hodPendingResultRows(user, { take: 50 })
+        : prisma.result.findMany({
+            where: { gradeStatus: "HOD_APPROVED" },
+            orderBy: { updatedAt: "desc" },
+            take: 50,
+            include: { course: true, user: true, submittedBy: true },
+          }),
+      isHod
+        ? hodScopedAppeals(user, { take: 50 })
+        : prisma.appeal.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { user: true } }),
+      isHod
+        ? Promise.resolve([])
+        : prisma.result.findMany({
+            where: { gradeStatus: "SENATE_APPROVED" },
+            orderBy: { updatedAt: "desc" },
+            take: 50,
+            include: { course: true, user: true, submittedBy: true },
+          }),
     ]);
-    const stage = user.role === "HOD_DEAN" ? "awaiting HOD approval" : "awaiting exams-unit finalisation";
+    const stage = isHod ? "awaiting HOD approval" : "awaiting exams-unit finalisation";
     return (
       <div className="space-y-8">
         <PageHeader eyebrow="Module 3 · Approvals" title="Results Pipeline" description={`Results ${stage} (${pending.length} pending).`} />
@@ -215,11 +248,38 @@ export default async function ResultsPage() {
                   <td className="px-4 py-3 text-slate/70">{r.submittedBy?.fullName ?? "—"}</td>
                   <td className="px-4 py-3"><StatusBadge status={r.gradeStatus} /></td>
                   <td className="px-4 py-3">
-                    <ApproveResultButton id={r.id} label={user.role === "HOD_DEAN" ? "Approve (HOD)" : "Senate finalise"} />
+                    <ApproveResultButton id={r.id} label={isHod ? "Approve (HOD)" : "Senate finalise"} />
                   </td>
                 </tr>
               ))}
             </Table>
+          )}
+          {!isHod && (
+            <section aria-label="Senate finalisation">
+              <SectionHeading
+                title="Senate-approved, awaiting finalisation"
+                subtitle="Ratified by Senate but not yet FINAL. Finalising makes the result permanent and immutable."
+              />
+              {senateApproved.length === 0 ? (
+                <EmptyState title="Nothing awaiting finalisation" body="Senate-approved results appear here until the Exams & Records office finalises them." />
+              ) : (
+                <Table headers={["Student", "Course", "Session", "Total", "Grade", "Status", "Action"]}>
+                  {senateApproved.map((r) => (
+                    <tr key={r.id}>
+                      <td className="px-4 py-3 font-medium text-slate">{r.user.fullName}</td>
+                      <td className="px-4 py-3 text-slate">{r.course.code} · {r.course.title}</td>
+                      <td className="px-4 py-3 text-slate/70">{r.academicSession}</td>
+                      <td className="px-4 py-3 text-slate">{r.total ?? "—"}</td>
+                      <td className="px-4 py-3 font-head font-bold text-slate">{r.grade ?? "—"}</td>
+                      <td className="px-4 py-3"><StatusBadge status={r.gradeStatus} /></td>
+                      <td className="px-4 py-3">
+                        <FinaliseResultButton id={r.id} label="Finalise" />
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+            </section>
           )}
 
           <section aria-label="Appeal queue">
@@ -376,5 +436,8 @@ export default async function ResultsPage() {
     );
   }
 
-  redirect("/portal/dashboard");
+  // Roles with a dedicated results surface are routed there instead of this
+  // generic module page. Everyone else (e.g. REGISTRY) keeps the shared page.
+  const dedicated = resultsForRole(user.role);
+  redirect(dedicated ?? "/portal/dashboard");
 }

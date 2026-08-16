@@ -34,11 +34,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jost.variable} ${roboto.variable}`} suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "document.documentElement.classList.add('js')",
-          }}
-        />
       </head>
       <body className="min-h-dvh flex flex-col antialiased">
         <a href="#main-content" className="skip-link">

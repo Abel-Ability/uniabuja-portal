@@ -21,7 +21,7 @@ export default async function NoticesPage() {
   const announcements = sheetAnnouncements.length > 0 ? sheetAnnouncements : dbAnnouncements;
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Public notices"
         title="Notices & Announcements"

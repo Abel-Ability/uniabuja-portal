@@ -105,7 +105,7 @@ export default async function TimetablingPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const readRoles = ["STUDENT", "LECTURER", "HOD_DEAN", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"];
+  const readRoles = ["STUDENT", "LECTURER", "HOD", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"];
   if (session.user.role === "TIMETABLE") {
     const [venues, bookings, entries, courses] = await Promise.all([
       prisma.venue.findMany({ orderBy: { name: "asc" } }),

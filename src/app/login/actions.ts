@@ -15,13 +15,19 @@ import { writeAudit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { verifyCaptcha } from "@/lib/captcha";
 import { issueEmailVerification } from "@/lib/verification";
+import { generateCaptcha, type CaptchaChallenge } from "@/lib/captcha";
 import {
   MAX_FAILED_ATTEMPTS,
   LOCKOUT_MS,
   PASSWORD_POLICY,
   normaliseIdentifier,
   MAX_CONCURRENT_SESSIONS,
+  landingForRole,
 } from "@/lib/constants";
+
+export async function createCaptcha(): Promise<CaptchaChallenge> {
+  return generateCaptcha();
+}
 
 export type AuthResult = { error?: string; unverified?: boolean };
 
@@ -157,7 +163,7 @@ export async function login(
 
   if (user.mustChangePassword) redirect("/login/change-password");
   if (user.mfaEnabled) redirect("/login/mfa");
-  redirect("/portal/dashboard");
+  redirect(landingForRole(user.role));
 }
 
 export async function changePassword(
@@ -228,7 +234,7 @@ export async function changePassword(
     actorRole: user.role,
     sessionId: session.id,
   });
-  redirect("/portal/dashboard");
+  redirect(landingForRole(user.role));
 }
 
 export async function logout(): Promise<void> {

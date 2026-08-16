@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/session";
-import { visibleModules, PORTAL_MODULES } from "@/lib/constants";
+import {
+  visibleModules,
+  PORTAL_MODULES,
+  getMenuForRole,
+  dashboardForRole,
+} from "@/lib/constants";
 import { PortalShell } from "@/components/portal-shell";
 import { IdleTimer } from "@/components/idle-timer";
 
@@ -29,17 +34,30 @@ export default async function PortalLayout({
     redirect("/login/mfa");
   }
 
-  const keys = visibleModules(user.role);
-  const modules = [
-    ...PORTAL_MODULES.filter((m) => keys.includes(m.key)).map((m) => ({
-      href: `/portal/${m.slug}`,
-      label: m.title,
-      description: m.description,
-    })),
-    ...Object.keys(CROSS_CUTTING)
-      .filter((k) => keys.includes(k as never))
-      .map((k) => CROSS_CUTTING[k]),
-  ];
+  // Determine the sidebar menu from the role-specific workspace definition.
+  // Roles with dedicated workspaces use their own menus; all other roles fall
+  // back to PORTAL_MODULES filtered by the access control matrix.
+  let modules: { href: string; label: string; description: string }[];
+
+  const roleMenu = getMenuForRole(user.role);
+  if (roleMenu && roleMenu.length > 0) {
+    modules = roleMenu;
+  } else {
+    const keys = visibleModules(user.role);
+    modules = [
+      ...PORTAL_MODULES.filter((m) => keys.includes(m.key)).map((m) => ({
+        href: `/portal/${m.slug}`,
+        label: m.title,
+        description: m.description,
+      })),
+      ...Object.keys(CROSS_CUTTING)
+        .filter((k) => keys.includes(k as never))
+        .map((k) => CROSS_CUTTING[k]),
+    ];
+  }
+
+  // Roles with a dedicated workspace start the sidebar on that workspace.
+  const dashboard = dashboardForRole(user.role);
 
   return (
     <PortalShell
@@ -50,6 +68,7 @@ export default async function PortalLayout({
         email: user.email,
       }}
       modules={modules}
+      dashboard={dashboard}
     >
       <IdleTimer />
       {children}

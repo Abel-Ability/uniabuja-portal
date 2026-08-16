@@ -208,7 +208,7 @@ export default async function SiwesPage() {
     );
   }
 
-  if (user.role === "HOD_DEAN" || user.role === "DVC_OVERSIGHT" || user.role === "VC") {
+  if (user.role === "HOD" || user.role === "DVC_OVERSIGHT" || user.role === "VC") {
     const records = await prisma.sIWESRecord.findMany({
       orderBy: { startAt: "desc" },
       include: { user: true, logbookEntries: true },

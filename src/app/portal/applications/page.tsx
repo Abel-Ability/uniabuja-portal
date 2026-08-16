@@ -24,7 +24,7 @@ export const metadata: Metadata = { title: "Admissions" };
 const PIPELINE = ["DRAFT", "SUBMITTED", "SCREENING", "PENDING_CAPS", "ADMITTED"];
 const REGISTRY_QUEUE = ["SUBMITTED", "SCREENING", "PENDING_CAPS"];
 const STATUS_ORDER = ["DRAFT", "SUBMITTED", "SCREENING", "PENDING_CAPS", "ADMITTED", "REJECTED", "WITHDRAWN"];
-const READONLY_ROLES = ["HOD_DEAN", "BURSARY", "STUDENT_AFFAIRS", "EXAMS_RECORDS", "PG_SCHOOL", "DVC_OVERSIGHT", "VC"];
+const READONLY_ROLES = ["HOD", "DEAN", "BURSARY", "STUDENT_AFFAIRS", "EXAMS_RECORDS", "PG_SCHOOL", "DVC_OVERSIGHT", "VC"];
 
 const NIPEDS_TONE: Record<string, "neutral" | "brand" | "slate" | "gold" | "red" | "amber"> = {
   VERIFIED: "brand",
@@ -112,7 +112,7 @@ export default async function Page() {
                       <span
                         className={`rounded-full px-4 py-2 font-head text-sm font-semibold ${
                           active
-                            ? "bg-amber-100 text-amber-800 ring-2 ring-gold"
+                            ? "bg-amber-100 text-amber-800 ring-2 ring-gold dark:bg-amber-900/40 dark:text-amber-200"
                             : done
                               ? "bg-brand-light text-brand-dark"
                               : "bg-slate/10 text-slate/70"
@@ -128,7 +128,7 @@ export default async function Page() {
                     <span aria-hidden="true" className="text-slate/30">
                       →
                     </span>
-                    <span className="rounded-full bg-amber-100 px-4 py-2 font-head text-sm font-semibold text-amber-800 ring-2 ring-gold">
+                    <span className="rounded-full bg-amber-100 px-4 py-2 font-head text-sm font-semibold text-amber-800 ring-2 ring-gold dark:bg-amber-900/40 dark:text-amber-200">
                       {application.status.replaceAll("_", " ")}
                     </span>
                   </li>

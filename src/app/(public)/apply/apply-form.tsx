@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { freshCaptchaChallenge, submitPublicApplication } from "./actions";
 import type { CaptchaChallenge } from "@/lib/captcha";
@@ -97,6 +97,13 @@ export function ApplyForm({
     });
   }
 
+  // Tokens expire server-side, so a failed submission must surface a fresh
+  // challenge instead of letting the applicant retry a stale one.
+  useEffect(() => {
+    if (state?.error) refreshChallenge();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   const groupedDepartments = useMemo(
     () =>
       departments.reduce<Record<string, DepartmentOption[]>>((acc, dept) => {
@@ -168,7 +175,7 @@ export function ApplyForm({
           <code className="font-mono text-xs">{state.reference}</code>.
         </p>
 
-        <div className="mt-6 rounded-2xl border border-slate/10 bg-white p-5 text-sm">
+        <div className="mt-6 rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 text-sm">
           <p className="font-head font-semibold text-slate">Your portal sign-in</p>
           <dl className="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
@@ -181,7 +188,7 @@ export function ApplyForm({
                 {state.tempPassword ? (
                   <>
                     {state.tempPassword}
-                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                       shown once
                     </span>
                   </>
@@ -192,7 +199,7 @@ export function ApplyForm({
             </div>
           </dl>
           {state.tempPassword ? (
-            <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800">
+            <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
               You will be asked to change this temporary password on first sign-in. Save it
               somewhere safe now — we cannot recover it afterwards.
             </p>
@@ -204,7 +211,7 @@ export function ApplyForm({
         </div>
 
         {state.verifyLink ? (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200">
             <p className="font-head font-semibold">Demo mode: verify your email</p>
             <p className="mt-1">
               No email provider is configured, so use this link to verify your address
@@ -265,7 +272,7 @@ export function ApplyForm({
       {state?.error ? (
         <p
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800/50 dark:bg-red-950/40 dark:text-red-200"
         >
           {state.error}
         </p>
@@ -282,7 +289,7 @@ export function ApplyForm({
       />
 
       {step === 0 ? (
-        <fieldset className="grid gap-4 rounded-2xl border border-slate/10 bg-white p-5 sm:p-6">
+        <fieldset className="grid gap-4 rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 sm:p-6">
           <legend className="sr-only">Personal details</legend>
           <div>
             <label htmlFor="fullName" className="mb-1 block text-sm font-semibold text-slate">
@@ -371,7 +378,7 @@ export function ApplyForm({
       ) : null}
 
       {step === 1 ? (
-        <fieldset className="space-y-4 rounded-2xl border border-slate/10 bg-white p-5 sm:p-6">
+        <fieldset className="space-y-4 rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 sm:p-6">
           <legend className="sr-only">Academic details</legend>
           <div>
             <span className="mb-2 block text-sm font-semibold text-slate">Application type</span>
@@ -499,7 +506,7 @@ export function ApplyForm({
 
       {step === 2 ? (
         <div className="space-y-4">
-          <dl className="rounded-2xl border border-slate/10 bg-white p-5 sm:p-6">
+          <dl className="rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 sm:p-6">
             <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate/70">Full name</dt>
@@ -547,7 +554,7 @@ export function ApplyForm({
             </button>
           </dl>
 
-          <div className="space-y-3 rounded-2xl border border-slate/10 bg-white p-5 sm:p-6">
+          <div className="space-y-3 rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 sm:p-6">
             <label className="flex items-start gap-3 text-sm text-slate">
               <input
                 type="checkbox"
@@ -576,7 +583,7 @@ export function ApplyForm({
             </label>
           </div>
 
-          <div className="rounded-2xl border border-slate/10 bg-white p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate/10 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-800/60 sm:p-6">
             <label htmlFor="captchaAnswer" className="mb-1 block text-sm font-semibold text-slate">
               {challenge.question}
             </label>

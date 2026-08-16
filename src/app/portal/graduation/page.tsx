@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Graduation & Clearance" };
 
 const APPROVER_DEPTS: Record<string, string> = {
-  HOD_DEAN: "EXAMS",
+  HOD: "EXAMS",
   STUDENT_AFFAIRS: "HOSTEL",
   SIWES: "SIWES",
   PG_SCHOOL: "SPORTS",

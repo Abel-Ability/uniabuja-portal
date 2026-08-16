@@ -176,7 +176,7 @@ describe("module actions (integration)", () => {
     await as("student@uniabuja.edu.ng");
     const issue = await actions.issueTranscript(null, fd({ id: "nope" }));
     expect(issue.error).toMatch(/permission/);
-    await as("exams@uniabuja.edu.ng");
+    await as("ss953@uniabuja.edu.ng");
     const t = await actions.requestTranscript(null, fd({ purpose: "JOB", copies: "1" }));
     expect(t.error).toMatch(/Only students/);
     const c = await actions.startClearance(null, fd({}));
@@ -193,24 +193,47 @@ describe("module actions (integration)", () => {
       where: { clearanceRequestId: request!.id, department: "EXAMS", status: "PENDING" },
     });
     expect(item).toBeTruthy();
-    await as("hod@uniabuja.edu.ng");
+    await as("aca140@uniabuja.edu.ng");
     const res = await actions.signOffClearance(null, fd({ itemId: item!.id }));
     expect(res).toEqual({ ok: true });
     const after = await prisma.clearanceItem.findUnique({ where: { id: item!.id } });
     expect(after!.status).toBe("SIGNED_OFF");
   });
 
-  it("bursary cannot sign off clearance", async () => {
-    await as("bursary@uniabuja.edu.ng");
+  it("bursary signs off a BURSARY clearance item but not another department's", async () => {
+    await as("alumni@uniabuja.edu.ng");
     const request = await prisma.clearanceRequest.findFirst({
       where: { userId: alumniId },
       orderBy: { submittedAt: "desc" },
     });
-    const item = await prisma.clearanceItem.findFirst({
-      where: { clearanceRequestId: request!.id, status: "PENDING" },
+    let item = await prisma.clearanceItem.findFirst({
+      where: { clearanceRequestId: request!.id, department: "BURSARY", status: "PENDING" },
     });
+    let created = false;
+    if (!item) {
+      item = await prisma.clearanceItem.create({
+        data: { clearanceRequestId: request!.id, department: "BURSARY", status: "PENDING" },
+      });
+      created = true;
+    }
+    await as("ss5762@uniabuja.edu.ng");
     const res = await actions.signOffClearance(null, fd({ itemId: item!.id }));
-    expect(res.error).toMatch(/cannot sign off/);
+    expect(res).toEqual({ ok: true });
+    const after = await prisma.clearanceItem.findUnique({ where: { id: item!.id } });
+    expect(after!.status).toBe("SIGNED_OFF");
+    if (created) {
+      await prisma.clearanceItemApprovalLog.deleteMany({ where: { itemId: item!.id } });
+      await prisma.clearanceItem.delete({ where: { id: item!.id } });
+    }
+
+    // Bursary still cannot sign off a department that is not its own.
+    const other = await prisma.clearanceItem.findFirst({
+      where: { clearanceRequestId: request!.id, department: "LIBRARY", status: "PENDING" },
+    });
+    if (other) {
+      const denied = await actions.signOffClearance(null, fd({ itemId: other.id }));
+      expect(denied.error).toMatch(/Item not found for your department/);
+    }
   });
 
   it("requests a transcript, then exams issues it", async () => {
@@ -229,7 +252,7 @@ describe("module actions (integration)", () => {
     });
     expect(created).toBeTruthy();
     expect(created!.referenceNo).toMatch(/^TXN-\d{4}-\d{6}$/);
-    await as("exams@uniabuja.edu.ng");
+    await as("ss953@uniabuja.edu.ng");
     const res = await actions.issueTranscript(null, fd({ id: created!.id }));
     expect(res).toEqual({ ok: true });
     const after = await prisma.transcriptRequest.findUnique({ where: { id: created!.id } });

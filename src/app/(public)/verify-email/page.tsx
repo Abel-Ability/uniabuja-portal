@@ -34,7 +34,7 @@ export default async function VerifyEmailPage({
       ) : (
         <Card>
           <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-2xl dark:bg-red-900/40">
               ⚠️
             </div>
             <h1 className="font-head text-2xl font-bold text-slate">Verification failed</h1>

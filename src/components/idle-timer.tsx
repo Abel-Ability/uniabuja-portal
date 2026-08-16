@@ -61,7 +61,7 @@ export function IdleTimer() {
       aria-label="Session expiring"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate/50 p-4"
     >
-      <div className="w-full max-w-md rounded-2xl border border-slate/10 bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-slate/10 bg-white p-6 shadow-2xl dark:border-slate-700/60 dark:bg-slate-800">
         <h2 className="font-head text-lg font-bold text-slate">Your session is expiring</h2>
         <p className="mt-2 text-sm text-slate/70">
           You have been inactive for a while. For your security you will be

@@ -31,7 +31,7 @@ export default async function ProfilesPage() {
   if (!session) redirect("/login");
   const { user } = session;
 
-  const isLecturerOrHod = ["LECTURER", "HOD_DEAN"].includes(user.role);
+  const isLecturerOrHod = ["LECTURER", "HOD"].includes(user.role);
 
   const [academicUnits, centres, researchOutputs, myStaffProfile] = await Promise.all([
     getAcademicUnits(),

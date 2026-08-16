@@ -22,7 +22,7 @@ export const metadata: Metadata = { title: "Postgraduate School" };
 const fmtDate = (d: Date | null | undefined): string =>
   d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
-const READ_ONLY_ROLES = ["LECTURER", "HOD_DEAN", "BURSARY", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"];
+const READ_ONLY_ROLES = ["LECTURER", "HOD", "DEAN", "BURSARY", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"];
 
 export default async function PostgraduatePage() {
   const session = await getCurrentSession();

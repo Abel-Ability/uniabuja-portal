@@ -7,6 +7,7 @@ import { getCurrentSession, metaFromHeaders } from "@/lib/session";
 import { writeAudit } from "@/lib/audit";
 import { verifyTotp } from "@/lib/totp";
 import { rateLimit } from "@/lib/rate-limit";
+import { landingForRole } from "@/lib/constants";
 
 export type MfaLoginResult = { error?: string };
 
@@ -22,7 +23,7 @@ export async function verifyMfaCode(
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  if (!session.user.mfaEnabled) redirect("/portal/dashboard");
+  if (!session.user.mfaEnabled) redirect(landingForRole(session.user.role));
 
   const ip = m.ip ?? "unknown";
   const lim = rateLimit(`mfa:${session.userId}:${ip}`, 10, 60_000);
@@ -63,5 +64,5 @@ export async function verifyMfaCode(
     after: { mfa: true },
   });
 
-  redirect("/portal/dashboard");
+  redirect(landingForRole(session.user.role));
 }

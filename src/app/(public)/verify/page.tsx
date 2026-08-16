@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Verify Results & Transcripts" };
 
 export default function VerifyPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Public verification"
         title="Verify Results & Transcripts"

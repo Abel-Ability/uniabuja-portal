@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Building2, FileText, Beaker, Users, type LucideIcon } from "lucide-react";
-import { FloatingDeadline, type Deadline } from "@/components/floating-deadline";
 
 // Full-screen hero with scroll parallax: the background image scales/translates
 // slower than the content. Dark gradient overlay (slate 70% → 20%) keeps text
@@ -13,12 +12,11 @@ export function Hero({
   facultyCount,
   departmentCount,
   instituteCentreCount,
-  deadline,
 }: {
   facultyCount: number;
   departmentCount: number;
   instituteCentreCount: number;
-  deadline?: Deadline | null;
+  
 }) {
   const bgRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -69,9 +67,7 @@ export function Hero({
       {/* gradient overlay slate 70% -> 20% */}
       <div aria-hidden="true" className="hero-overlay absolute inset-0" />
 
-      <FloatingDeadline deadline={deadline ?? null} />
-
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-14 pt-28 sm:px-6 sm:pb-24 sm:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-4 pt-12 sm:px-6 sm:pb-8 sm:pt-16">
         <h1 className="anim-fade-up delay-1 mt-4 max-w-4xl font-head text-[25px] font-bold leading-tight text-white sm:text-[40px] md:text-[50px]">
           <span className="anim-grad-text">
             Your journey
@@ -83,12 +79,12 @@ export function Hero({
             University of Abuja
           </span>
         </h1>
-        <p className="anim-fade-up delay-2 mt-5 max-w-2xl text-lg text-white/90 sm:text-xl">
+        <p className="anim-fade-up delay-2 mt-4 max-w-2xl text-lg text-white/90 sm:text-xl">
           A secure, unified digital portal for admissions, academics, and
           administration. Apply with confidence — your data is protected under
           Nigeria&apos;s Data Protection Act.
         </p>
-        <div className="anim-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+        <div className="anim-fade-up delay-3 mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
           <Link
             href="/apply"
             className="btn-sheen inline-flex items-center justify-center gap-2 rounded-full bg-brand-strong px-[42px] py-[21px] text-center font-head text-[21px] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-xl"
@@ -102,17 +98,6 @@ export function Hero({
             Check Admission / Portal Login
           </Link>
         </div>
-        <ul className="anim-fade-up delay-4 mt-10 flex flex-wrap items-center gap-3 border-t border-white/25 pt-6 text-sm text-white/85 sm:mt-12">
-          <li className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 py-2 font-semibold backdrop-blur">
-            <span aria-hidden="true">📅</span> 2026/2027 Admission Session
-          </li>
-          <li className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 py-2 font-semibold backdrop-blur">
-            <span aria-hidden="true">📍</span> Airport Road, Abuja, FCT
-          </li>
-          <li className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 py-2 font-semibold backdrop-blur">
-            <span aria-hidden="true">🔒</span> NDPA 2023 Compliant
-          </li>
-        </ul>
         <div className="anim-fade-up delay-5 mt-6 grid grid-cols-1 gap-4 border-t border-white/25 pt-6 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map(({ value, label, icon: Icon }) => (
             <div key={label} className="flex items-center gap-3">
@@ -125,17 +110,19 @@ export function Hero({
               </div>
             </div>
           ))}
+          <div className="anim-fade-up delay-4 mt-4 flex flex-col sm:flex-row justify-between gap-3 text-sm text-white/85">
+            <div className="flex items-center gap-3 flex-1 flex-nowrap">
+              <span aria-hidden="true">📅</span> 2026/2027 Admission Session
+            </div>
+            <div className="flex items-center gap-3 flex-1 flex-nowrap">
+              <span aria-hidden="true">📍</span> Airport Road, Abuja, FCT
+            </div>
+            <div className="flex items-center gap-3 flex-1 flex-nowrap">
+              <span aria-hidden="true">🔒</span> NDPA 2023 Compliant
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* scroll hint */}
-      <a
-        href="#main-content"
-        aria-label="Scroll to content"
-        className="scroll-hint absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 rounded-full border border-white/40 px-3 py-2 text-lg text-white/80 transition-colors hover:text-white sm:block"
-      >
-        ↓
-      </a>
     </section>
   );
 }

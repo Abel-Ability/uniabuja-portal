@@ -2,12 +2,6 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-// PostgreSQL via driver adapter (Prisma 7). Local development can point
-// DATABASE_URL at a local/remote Postgres; see docs/MIGRATION.md.
-//
-// The Prisma CLI and the runtime adapter both resolve connection strings
-// from DATABASE_URL, so the same value works for migrations and the app.
-
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createClient(): PrismaClient {

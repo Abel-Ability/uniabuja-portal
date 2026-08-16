@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BRAND } from "@/lib/constants";
+import { AnnouncementTicker } from "@/components/announcement-ticker";
+import { DeadlineTicket } from "@/components/deadline-ticket";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { PillLink } from "@/components/ui";
+import type { Deadline } from "@/components/floating-deadline";
 
 export function LogoMark({ size = 36 }: { size?: number }) {
   // Official University of Abuja logo.
@@ -20,13 +25,10 @@ export function LogoMark({ size = 36 }: { size?: number }) {
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/apply", label: "Apply" },
-  { href: "/fees", label: "Fees" },
-  { href: "/student", label: "Student" },
-  { href: "/staff", label: "Staff" },
-  { href: "/info", label: "Info" },
+  { href: "/notices", label: "Announcements" },
 ];
 
-export function Header() {
+export function Header({ deadline }: { deadline?: Deadline | null }) {
   const [open, setOpen] = useState(false);
 
   // Close the mobile menu when the viewport grows past the mobile breakpoint.
@@ -50,8 +52,9 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate/10 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 pt-3 pb-1 sm:px-6">
+    <header className="sticky top-0 z-50">
+      <div className="border-b border-slate/10 bg-white/95 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 pt-3 pb-1 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label={BRAND.orgName}>
           <LogoMark />
           <span className="min-w-0 leading-tight">
@@ -78,6 +81,7 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle className="hidden sm:inline-flex" />
           <Link
             href="/login"
             className="hidden rounded-full bg-brand-strong px-5 py-2.5 font-head text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark sm:inline-flex"
@@ -90,7 +94,7 @@ export function Header() {
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate/15 text-slate transition-colors hover:bg-slate/5 lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate/15 text-slate transition-colors hover:bg-slate/5 dark:border-slate-700 lg:hidden"
           >
             <span aria-hidden="true" className="relative block h-4 w-5">
               <span
@@ -105,6 +109,20 @@ export function Header() {
             </span>
           </button>
         </div>
+        </div>
+      </div>
+
+      <AnnouncementTicker />
+
+      <div className="mt-2 flex flex-wrap items-center justify-start gap-3 px-4 text-xs sm:px-6">
+        <PillLink
+          href="/notices"
+          variant="outline"
+          className="text-slate hover:bg-white/10 hover:text-white rounded-full px-3 py-1"
+        >
+          View all recent announcements
+        </PillLink>
+        <DeadlineTicket deadline={deadline ?? null} />
       </div>
 
       {/* mobile menu */}
@@ -112,7 +130,7 @@ export function Header() {
         <nav
           id="mobile-nav"
           aria-label="Mobile"
-          className="border-t border-slate/10 bg-white px-4 pb-5 pt-3 shadow-lg lg:hidden"
+          className="border-t border-slate/10 bg-white px-4 pb-5 pt-3 shadow-lg dark:border-slate-700/60 dark:bg-slate-900 lg:hidden"
         >
           <ul className="space-y-1">
             {NAV_LINKS.map((l) => (
@@ -134,6 +152,9 @@ export function Header() {
               >
                 Portal Login
               </Link>
+            </li>
+            <li className="flex items-center justify-center pt-3">
+              <ThemeToggle />
             </li>
           </ul>
         </nav>

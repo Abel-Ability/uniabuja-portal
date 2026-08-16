@@ -11,7 +11,7 @@ export default function ChangePasswordPage() {
       id="main-content"
       className="flex min-h-dvh items-center justify-center bg-brand-strong px-4 py-12"
     >
-      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl dark:bg-slate-800 sm:p-10">
         <h1 className="font-head text-2xl font-bold text-slate">Set a new password</h1>
         <p className="mb-6 mt-1 text-sm text-slate/75">
           For your first sign-in, or after a password reset.

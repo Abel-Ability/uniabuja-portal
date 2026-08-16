@@ -30,7 +30,7 @@ export default async function ApplyPage() {
   const challenge = generateCaptcha();
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Admissions"
         title="Apply to the University of Abuja"
@@ -64,7 +64,7 @@ export default async function ApplyPage() {
               </p>
               <Link
                 href="/login"
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 font-head text-xs font-semibold text-slate transition-colors hover:bg-white"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 font-head text-xs font-semibold text-slate transition-colors hover:bg-white dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
                 Sign in →
               </Link>

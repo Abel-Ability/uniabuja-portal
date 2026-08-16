@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `dark:` utilities activate when `.dark` is set on
+   <html> (toggled by the ThemeToggle and applied pre-hydration by the inline
+   script in the root layout). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
+  --background: #f1f5f9;
   --foreground: #1f2937;
   --brand: #32a320;
   --brand-dark: #165c0d;
@@ -10,6 +15,20 @@
   --slate: #2e3e4e;
   --slate-dark: #1f2a35;
   --gold: #c9a227;
+}
+
+/* Dark theme: flip the semantic tokens so every utility derived from them
+   (text-slate, border-slate/*, bg-brand-light, …) adapts automatically. */
+.dark {
+  --background: #0c1522;
+  --foreground: #e2e8f0;
+  --brand: #4bc13c;
+  --brand-dark: #5cc94d;
+  --brand-strong: #2f9c22;
+  --brand-light: #13291a;
+  --slate: #cbd5e1;
+  --slate-dark: #f1f5f9;
+  --gold: #d9b545;
 }
 
 @theme inline {
@@ -59,6 +78,12 @@ h1, h2, h3, h4, h5, h6 {
 *::-webkit-scrollbar-track {
   background: #e5e7eb;
 }
+.dark *::-webkit-scrollbar-track {
+  background: #0c1522;
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: #334155;
+}
 *::-webkit-scrollbar-thumb {
   background: var(--slate);
   border-radius: 6px;
@@ -86,6 +111,9 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff;
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 8px 0;
+}
+.dark .skip-link {
+  background: var(--slate-dark);
 }
 .skip-link:focus {
   left: 0;
@@ -340,5 +368,41 @@ html.js .reveal.is-visible {
   .float-across {
     left: 50% !important;
     transform: translate3d(-50%, 0, 0) !important;
+  }
+}
+
+/* Print output for official documents (e.g. the Student Course Registration).
+   Hides the portal chrome and prints only the document content on A4. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  header,
+  aside,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  .lg\:pl-72 {
+    padding-left: 0 !important;
+  }
+  #main-content {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .print-document {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .print-document * {
+    color: #0f172a !important;
   }
 }

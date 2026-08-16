@@ -80,7 +80,7 @@ export async function ModulePage({
             {planned.map((s) => (
               <li
                 key={s}
-                className="rounded-xl border border-slate/10 bg-white p-4 text-sm font-medium text-slate shadow-sm"
+                className="rounded-xl border border-slate/10 bg-white p-4 text-sm font-medium text-slate shadow-sm dark:border-slate-700/60 dark:bg-slate-800/80"
               >
                 {s}
               </li>

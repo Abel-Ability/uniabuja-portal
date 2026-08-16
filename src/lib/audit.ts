@@ -22,7 +22,10 @@ export type AuditAction =
   | "REVOKE"
   | "STEP_UP"
   | "AUTH_FAIL"
-  | "MFA_FAIL";
+  | "MFA_FAIL"
+  | "FINALIZE"
+  | "LOCK"
+  | "RECONCILE";
 
 type AuditInput = {
   action: AuditAction;

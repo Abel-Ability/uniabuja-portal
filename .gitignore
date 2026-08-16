@@ -44,5 +44,6 @@ next-env.d.ts
 
 # local database & logs
 /dev.db
+/data/pgdata
 *.log
 tmp_*.txt

@@ -27,7 +27,7 @@ export default async function InstitutesPage() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Academics"
         title="Institutes, Directorates & Centres"
@@ -45,7 +45,7 @@ export default async function InstitutesPage() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((name, i) => (
                 <Reveal key={name} delay={Math.min(i, 5) * 60}>
-                  <div className="card-lift flex h-full items-center rounded-xl border border-slate/10 bg-white p-4 text-sm font-medium text-slate shadow-sm">
+                  <div className="card-lift flex h-full items-center rounded-xl border border-slate/10 bg-white p-4 text-sm font-medium text-slate shadow-sm dark:border-slate-700/60 dark:bg-slate-800/60">
                     {name}
                   </div>
                 </Reveal>

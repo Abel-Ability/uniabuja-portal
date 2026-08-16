@@ -11,7 +11,7 @@ export default async function FacultiesPage() {
   const { faculties, facultyCount, departmentCount } = await getAcademicUnits();
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Academics"
         title="Faculties & Departments"
@@ -25,7 +25,7 @@ export default async function FacultiesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {faculties.map((f, i) => (
             <Reveal key={f.name} delay={Math.min(i, 5) * 70}>
-              <details className="group rounded-xl border border-slate/15 bg-white p-4 shadow-sm transition-shadow open:shadow-md">
+              <details className="group rounded-xl border border-slate/15 bg-white p-4 shadow-sm transition-shadow open:shadow-md dark:border-slate-700/60 dark:bg-slate-800/60">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-head text-base font-bold text-slate marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-strong [&::-webkit-details-marker]:hidden">
                   <span className="flex flex-col gap-0.5">
                     <span className="flex items-center gap-2">

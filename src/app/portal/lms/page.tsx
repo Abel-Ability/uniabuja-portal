@@ -315,7 +315,7 @@ export default async function LmsPage() {
     );
   }
 
-  if (["HOD_DEAN", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"].includes(user.role)) {
+  if (["HOD", "EXAMS_RECORDS", "DVC_OVERSIGHT", "VC"].includes(user.role)) {
     const [courses, syncLogs] = await Promise.all([
       courseRows(),
       prisma.lmsSyncLog.findMany({

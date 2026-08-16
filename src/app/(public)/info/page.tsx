@@ -50,7 +50,7 @@ const TOOLS = [
 
 export default function InfoPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Governance & Operations"
         title="Information, Policies & Service Status"
@@ -68,7 +68,7 @@ export default function InfoPage() {
             {POLICIES.map((p, i) => (
               <li key={p.title}>
                 <Reveal delay={Math.min(i, 5) * 80}>
-                  <div className="card-lift h-full rounded-2xl border border-slate/10 bg-white p-6 shadow-sm">
+                  <div className="card-lift h-full rounded-2xl border border-slate/10 bg-white p-6 shadow-sm dark:border-slate-700/60 dark:bg-slate-800/60">
                     <h3 className="font-head font-bold text-slate">{p.title}</h3>
                     <p className="mt-2 text-sm text-slate/70">{p.body}</p>
                     <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-strong">
@@ -119,7 +119,7 @@ export default function InfoPage() {
               <Reveal key={t.href} delay={i * 80}>
                 <Link
                   href={t.href}
-                  className="card-lift flex h-full flex-col justify-between gap-4 rounded-2xl border border-slate/10 bg-white p-6 shadow-sm"
+                  className="card-lift flex h-full flex-col justify-between gap-4 rounded-2xl border border-slate/10 bg-white p-6 shadow-sm dark:border-slate-700/60 dark:bg-slate-800/60"
                 >
                   <span className="font-head font-semibold text-slate">{t.label}</span>
                   <span className="text-sm font-semibold text-brand-strong">Open →</span>

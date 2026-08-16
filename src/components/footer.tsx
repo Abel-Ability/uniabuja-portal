@@ -10,7 +10,7 @@ const QUICK_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="bg-white text-brand-strong">
+    <footer className="bg-white text-brand-strong dark:bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5">
         <div className="mx-auto max-w-5xl text-sm text-slate">
           <div className="flex flex-col items-center justify-center gap-y-3 text-center">

@@ -29,7 +29,7 @@ const SERVICES = [
 
 export default function StudentPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Students"
         title="Student Portal"
@@ -65,7 +65,7 @@ export default function StudentPage() {
           <div className="rounded-3xl bg-brand-strong p-6 text-white sm:p-10">
             <h2 className="font-head text-xl font-bold sm:text-2xl">Sign in to the student portal</h2>
             <p className="mt-2 max-w-2xl text-sm text-white/80">
-              Use your registration number (e.g. 12/345ABC/678) or the email you applied with, and
+              Use your registration number (e.g. 26/284PHY/678) or the email you applied with, and
               your portal password. Newly admitted students set a password on first sign-in.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

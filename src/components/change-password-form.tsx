@@ -1,19 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { changePassword } from "@/app/login/actions";
 import { PillButton } from "@/components/ui";
 import { PASSWORD_POLICY } from "@/lib/constants";
 
 export function ChangePasswordForm() {
   const [state, formAction, pending] = useActionState(changePassword, null);
+  const [showPasswords, setShowPasswords] = useState(false);
 
   return (
     <form action={formAction} className="space-y-4">
       {state?.error ? (
         <p
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800/50 dark:bg-red-950/40 dark:text-red-200"
         >
           {state.error}
         </p>
@@ -31,7 +32,7 @@ export function ChangePasswordForm() {
         <input
           id="currentPassword"
           name="currentPassword"
-          type="password"
+          type={showPasswords ? "text" : "password"}
           autoComplete="current-password"
           required
           className="w-full rounded-xl border border-slate/25 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30"
@@ -47,7 +48,7 @@ export function ChangePasswordForm() {
         <input
           id="newPassword"
           name="newPassword"
-          type="password"
+          type={showPasswords ? "text" : "password"}
           autoComplete="new-password"
           required
           minLength={PASSWORD_POLICY.minLength}
@@ -69,12 +70,21 @@ export function ChangePasswordForm() {
         <input
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
+          type={showPasswords ? "text" : "password"}
           autoComplete="new-password"
           required
           className="w-full rounded-xl border border-slate/25 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30"
         />
       </div>
+      <label className="flex items-center gap-2 text-xs font-medium text-slate">
+        <input
+          type="checkbox"
+          checked={showPasswords}
+          onChange={(e) => setShowPasswords(e.target.checked)}
+          className="h-4 w-4 rounded border-slate/40 text-brand focus:ring-brand/30"
+        />
+        Show passwords
+      </label>
       <PillButton type="submit" disabled={pending} className="w-full">
         {pending ? "Updating…" : "Update password"}
       </PillButton>

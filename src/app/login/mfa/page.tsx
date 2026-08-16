@@ -4,7 +4,7 @@ import { getCurrentSession } from "@/lib/session";
 import { LogoMark } from "@/components/header";
 import { MfaLoginForm } from "@/components/mfa-login-form";
 import { FloatingActions } from "@/components/floating-actions";
-import { BRAND } from "@/lib/constants";
+import { BRAND, landingForRole } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +13,14 @@ export const metadata: Metadata = { title: "Two-step verification" };
 export default async function MfaLoginPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (!session.user.mfaEnabled) redirect("/portal/dashboard");
+  if (!session.user.mfaEnabled) redirect(landingForRole(session.user.role));
 
   return (
     <main
       id="main-content"
       className="flex min-h-dvh items-center justify-center bg-brand-strong px-4 py-12"
     >
-      <div className="grid w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
+      <div className="grid w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-slate-800 md:grid-cols-2">
         <div className="hidden flex-col justify-between bg-brand-strong p-10 text-white md:flex">
           <div className="flex items-center gap-3">
             <LogoMark />

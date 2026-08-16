@@ -5,10 +5,7 @@ import Link from "next/link";
 import {
   LogIn,
   FileText,
-  CreditCard,
-  GraduationCap,
-  Users,
-  Info,
+  Megaphone,
   ChevronUp,
 } from "lucide-react";
 
@@ -20,10 +17,7 @@ import {
 const QUICK_LINKS = [
   { href: "/login", label: "Login", icon: LogIn },
   { href: "/apply", label: "Apply", icon: FileText },
-  { href: "/fees", label: "Fees", icon: CreditCard },
-  { href: "/student", label: "Student", icon: GraduationCap },
-  { href: "/staff", label: "Staff", icon: Users },
-  { href: "/info", label: "Info", icon: Info },
+  { href: "/notices", label: "Announcements", icon: Megaphone },
 ];
 
 export function FloatingActions() {
@@ -65,7 +59,7 @@ export function FloatingActions() {
             href={href}
             title={label}
             aria-label={label}
-            className="group flex items-center gap-2 rounded-full bg-white/90 py-2.5 pl-3 pr-3 text-gold opacity-70 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-brand-strong hover:text-white hover:opacity-100 hover:shadow-lg focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
+            className="group flex items-center gap-2 rounded-full bg-white/90 py-2.5 pl-3 pr-3 text-gold opacity-70 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-brand-strong hover:text-white hover:opacity-100 hover:shadow-lg focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong dark:bg-slate-800/90"
           >
             <Icon className="h-5 w-5 shrink-0" />
             <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 group-hover:max-w-[120px]">
@@ -78,7 +72,7 @@ export function FloatingActions() {
       {/* mobile bottom action bar */}
       <nav
         aria-label="Quick actions"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-white/60 bg-white/90 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-white/60 bg-white/90 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/95 md:hidden"
       >
         {QUICK_LINKS.slice(0, 5).map(({ href, label, icon: Icon }) => (
           <Link

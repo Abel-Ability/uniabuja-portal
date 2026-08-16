@@ -48,7 +48,7 @@ export function FloatingDeadline({ deadline }: { deadline: Deadline | null }) {
       className="float-across pointer-events-none absolute left-0 top-24 z-20"
     >
       <div className="float-bob">
-        <div className="flex items-center gap-3 rounded-full border border-gold/60 bg-white/85 py-2 pl-2.5 pr-4 shadow-xl shadow-brand-strong/20 backdrop-blur-sm">
+        <div className="flex items-center gap-3 rounded-full border border-gold/60 bg-white/85 py-2 pl-2.5 pr-4 shadow-xl shadow-brand-strong/20 backdrop-blur-sm dark:bg-slate-800/85">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white">
             <CalendarClock className="h-5 w-5" aria-hidden="true" />
           </span>

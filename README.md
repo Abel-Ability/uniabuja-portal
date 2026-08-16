@@ -3,18 +3,18 @@
 A working Next.js demo application implementing the University of Abuja unified
 student portal specification in
 [`Prompt_UniAbuja_Portal_v3.md`](./Prompt_UniAbuja_Portal_v3.md): 16 modules,
-role-based access control, mock SSO, tamper-evident audit logging, SQLite data
-layer and an integration-tested API.
+role-based access control, mock SSO, tamper-evident audit logging, PostgreSQL
+data layer and an integration-tested API.
 
-> **Status:** functional demo. Replace the SQLite store with PostgreSQL for
-> production (see [`docs/MIGRATION.md`](./docs/MIGRATION.md)) and review
-> [`docs/SECURITY.md`](./docs/SECURITY.md) for hardening.
+> **Status:** functional demo running on PostgreSQL via an embedded Postgres
+> binary for local development (see [`docs/MIGRATION.md`](./docs/MIGRATION.md))
+> and review [`docs/SECURITY.md`](./docs/SECURITY.md) for hardening.
 
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack), React 19, TypeScript
 - **Tailwind CSS v4** with the university brand theme (Jost + Roboto)
-- **Prisma 7** (driver adapters) on **SQLite** via `better-sqlite3`
+- **Prisma 7** (driver adapters) on **PostgreSQL** via `@prisma/adapter-pg`
 - **bcryptjs** password hashing, HMAC-signed session cookies
 - **Vitest 4** for unit + integration tests
 
@@ -22,9 +22,13 @@ layer and an integration-tested API.
 
 ```bash
 npm install
-npm run db:migrate      # prisma migrate dev (creates dev.db)
-npm run db:seed         # loads 15 demo users + academic records
-npm run dev             # http://localhost:3000
+npm run db:start        # starts embedded PostgreSQL on port 5432 (keep running)
+npm run db:migrate      # prisma migrate dev (applies migrations to portal DB)
+npm run db:generate     # generates data/staff.csv + data/students.csv from live sheet
+npm run db:seed         # loads 15 demo users + academic records (keep-list: 12/345ABC/678, UA/PG1234/567890, 99/123XYZ/456)
+npm run db:sync-roster  # syncs staff/students from the Google Sheet
+                      #   or from data/ files (--from=data) with optional purge (--purge-stale-students)
+npm run dev             # http://localhost:3000 (in a second terminal)
 ```
 
 Check quality:
@@ -45,17 +49,34 @@ student are forced to change it on first login).
 | `12/345ABC/678` | Undergraduate Student |
 | `applicant@uniabuja.edu.ng` | Applicant |
 | `UA/PG1234/567890` | PG Student |
-| `AB12` | Lecturer |
-| `CD34` | HOD / Dean |
-| `EF56` | Registry / Admissions |
-| `GH78` | Bursary |
-| `IJ90` | Student Affairs |
-| `KL12` | Exams & Records |
-| `MN34` | PG School |
-| `OP56` | SIWES |
+| `ACA3879` | Lecturer |
+| `ACA140` | Head of Department |
+| `SS6424` | Registry / Admissions |
+| `SS5762` | Bursary |
+| `SS8229` | Student Affairs |
+| `SS953` | Exams & Records |
+| `SS8026` | PG School |
+| `SS6753` | SIWES |
 | `QR78` | Timetable / Venue |
-| `ST90` | IT Admin |
-| `UV12` | DVC Oversight |
+| `SS5103` | IT Admin |
+| `ACA5129` | DVC Oversight |
+| `ACA3998` | Vice-Chancellor |
+| `ACA8614` | Dean of Faculty |
+| `AC13` | SBC Chairman |
+| `BD24` | Governance Oversight |
+
+> The seed above is a demo subset. `npm run db:sync-roster` upserts the full
+> staff and student roster from the Google Sheet (staff tab → staff users,
+> students tab → students). Demo staff accounts use their real sheet staff
+> numbers as usernames, so a re-sync updates their details in place without
+> overwriting passwords.
+
+> The CSV files under `data/` are generated from the live Google Sheet via
+> `npm run db:generate` (see `scripts/generate-roster-files.ts`). They may be
+> pasted directly into the sheet tabs; running `npm run db:sync-roster` (with
+> `--from=data`) will materialise them into the DB. Stale roster students can be
+> purged with `--purge-stale-students`, keeping the three seed demo accounts
+> (`12/345ABC/678`, `UA/PG1234/567890`, `99/123XYZ/456`) and their dependents.
 
 ## What works
 
@@ -87,6 +108,7 @@ student are forced to change it on first login).
 ```
 prisma/schema.prisma   # ~45 models across all 16 modules
 prisma/seed.ts         # demo data (users, programmes, results, invoices...)
+scripts/start-db.ts    # embedded PostgreSQL launcher (npm run db:start)
 src/lib/               # prisma, session, audit, password, RBAC, rate-limit
 src/components/        # design system, header/footer, portal shell, forms
 src/app/               # pages: public + /login + /portal/* + /api/v1/*
@@ -99,8 +121,13 @@ src/generated/prisma/  # generated Prisma client (Prisma 7 driver adapter)
 `.env` (see `.env.example`):
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://portal:password@localhost:5432/portal?schema=public"
 SESSION_SECRET="replace-with-a-long-random-secret"
+PGPORT=5432
+PGUSER=portal
+PGPASSWORD=password
+PGDATABASE=portal
+PGDATADIR=./data/pgdata
 ```
 
 > The seed password policy requires a temporary password on first login, so the

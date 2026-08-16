@@ -9,6 +9,8 @@ import {
   REGEX_PG_PROVISIONAL,
   REGEX_STAFF,
   MODULE_LABELS,
+  ROLES,
+  ROLE_LABELS,
 } from "./constants";
 
 describe("identifier formats", () => {
@@ -59,15 +61,24 @@ describe("access control matrix", () => {
   });
 
   it("HOD approves results but does not read-edit them", () => {
-    expect(can("HOD_DEAN", "EXAMS_RECORDS", "A")).toBe(true);
-    expect(can("HOD_DEAN", "EXAMS_RECORDS", "R")).toBe(false);
-    expect(can("HOD_DEAN", "FEES", "R")).toBe(false);
+    expect(can("HOD", "EXAMS_RECORDS", "A")).toBe(true);
+    expect(can("HOD", "EXAMS_RECORDS", "R")).toBe(false);
+    expect(can("HOD", "FEES", "R")).toBe(false);
   });
 
   it("bursary approves fees; students only write", () => {
     expect(can("BURSARY", "FEES", "A")).toBe(true);
     expect(can("STUDENT", "FEES", "A")).toBe(false);
     expect(can("STUDENT", "FEES", "W")).toBe(true);
+  });
+
+  it("bursary may read and approve clearance items but nothing beyond its module set", () => {
+    expect(can("BURSARY", "GRAD_CLEARANCE", "R")).toBe(true);
+    expect(can("BURSARY", "GRAD_CLEARANCE", "A")).toBe(true);
+    expect(can("BURSARY", "GRAD_CLEARANCE", "W")).toBe(false);
+    expect(can("BURSARY", "ADMIN_SYSTEM", "R")).toBe(false);
+    expect(can("BURSARY", "DPO", "R")).toBe(false);
+    expect(can("BURSARY", "SENATE", "R")).toBe(false);
   });
 
   it("IT admin controls admin system and reads DPO", () => {
@@ -136,5 +147,61 @@ describe("access control matrix", () => {
     );
     expect(visibleModules("STUDENT")).toContain("FEES");
     expect(visibleModules("STUDENT")).not.toContain("ADMIN_SYSTEM");
+  });
+
+  it("HOD grants department-scoped rights through the matrix", () => {
+    expect(can("HOD", "EXAMS_RECORDS", "A")).toBe(true);
+    expect(can("HOD", "EXAMS_RECORDS", "R")).toBe(false);
+    expect(can("HOD", "FEES", "R")).toBe(false);
+    expect(can("HOD", "ADMIN_SYSTEM", "R")).toBe(false);
+  });
+
+  it("DEAN is read-only oversight with communications write", () => {
+    expect(can("DEAN", "EXAMS_RECORDS", "R")).toBe(true);
+    expect(can("DEAN", "EXAMS_RECORDS", "A")).toBe(false);
+    expect(can("DEAN", "EXAMS_RECORDS", "S")).toBe(false);
+    expect(can("DEAN", "ADMISSIONS", "R")).toBe(true);
+    expect(can("DEAN", "PG_RESEARCH", "R")).toBe(true);
+    expect(can("DEAN", "PROFILES", "R")).toBe(true);
+    expect(can("DEAN", "GRAD_CLEARANCE", "R")).toBe(true);
+    expect(can("DEAN", "COMMUNICATIONS", "RW".charAt(0) as never)).toBe(true);
+    expect(can("DEAN", "COMMUNICATIONS", "A")).toBe(false);
+    expect(can("DEAN", "FEES", "R")).toBe(false);
+    expect(can("DEAN", "ADMIN_SYSTEM", "R")).toBe(false);
+  });
+
+  it("SBC chairman runs Senate business but approves nothing in the results pipeline", () => {
+    expect(can("SBC_CHAIRMAN", "SENATE", "R")).toBe(true);
+    expect(can("SBC_CHAIRMAN", "SENATE", "W")).toBe(true);
+    expect(can("SBC_CHAIRMAN", "SENATE", "A")).toBe(true);
+    expect(can("SBC_CHAIRMAN", "EXAMS_RECORDS", "R")).toBe(true);
+    expect(can("SBC_CHAIRMAN", "EXAMS_RECORDS", "A")).toBe(false);
+    expect(can("SBC_CHAIRMAN", "FEES", "R")).toBe(false);
+    expect(can("SBC_CHAIRMAN", "ADMIN_SYSTEM", "R")).toBe(false);
+  });
+
+  it("governance oversight member reads like the DVC but writes nothing", () => {
+    for (const m of Object.keys(MODULE_LABELS) as never[]) {
+      if (m === "HEALTH") continue;
+      expect(can("GOVERNANCE_OVERSIGHT_MEMBER", m, "R"), `read ${m}`).toBe(true);
+      expect(can("GOVERNANCE_OVERSIGHT_MEMBER", m, "W"), `write ${m}`).toBe(false);
+    }
+    expect(can("GOVERNANCE_OVERSIGHT_MEMBER", "HEALTH", "R")).toBe(false);
+    expect(can("GOVERNANCE_OVERSIGHT_MEMBER", "SENATE", "R")).toBe(true);
+  });
+});
+
+describe("role labels", () => {
+  it("labels every recovered executive and governance role", () => {
+    expect(ROLE_LABELS.HOD.length).toBeGreaterThan(0);
+    expect(ROLE_LABELS.DEAN.length).toBeGreaterThan(0);
+    expect(ROLE_LABELS.SBC_CHAIRMAN.length).toBeGreaterThan(0);
+    expect(ROLE_LABELS.GOVERNANCE_OVERSIGHT_MEMBER.length).toBeGreaterThan(0);
+  });
+
+  it("every role label resolves a display string", () => {
+    for (const role of ROLES) {
+      expect(ROLE_LABELS[role]?.length ?? 0).toBeGreaterThan(0);
+    }
   });
 });

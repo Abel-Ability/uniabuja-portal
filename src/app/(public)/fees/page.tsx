@@ -72,7 +72,7 @@ export default async function FeesPage() {
   const tuitionByCode = new Map(sheetTuition.map((t) => [t.code, t.tuitionPerAnnumNaira * 100]));
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       <PageHeader
         eyebrow="Fees & Payments"
         title="Fees Schedule 2026/2027"

@@ -148,7 +148,7 @@ export async function getAcademicUnits(): Promise<AcademicUnits> {
 }
 
 export async function getCentres(): Promise<string[]> {
-  const csv = await fetchSheetCsv("Centres2");
+  const csv = await fetchSheetCsv("Centres_new");
   if (!csv) return [];
 
   const centres = new Set<string>();
@@ -229,7 +229,20 @@ function isEnabled(value: string | undefined): boolean {
 function parseDate(value: string | undefined): Date | null {
   if (!value) return null;
   const v = value.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return new Date(`${v}T00:00:00Z`);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return new Date(`${v}T00:00:00`);
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+    const [month, day, year] = v.split("/").map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v)) {
+    const [month, day, year] = v.split("/").map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+  const monthMatch = v.match(/^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},\s+\d{4}/i);
+  if (monthMatch) {
+    const date = new Date(v);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -254,7 +267,7 @@ export async function getSheetAnnouncements(): Promise<AnnouncementItem[]> {
         category: (r.category || "GENERAL").toUpperCase(),
         title: r.title,
         body: r.body,
-        publishedAt: publishedAt ?? new Date(0),
+        publishedAt: publishedAt ? new Date(publishedAt.getTime()) : new Date(),
         scope: (r.scope || "PUBLIC").toUpperCase() === "STAFF" ? "STAFF" : "PUBLIC",
       } satisfies AnnouncementItem;
     })
@@ -313,4 +326,54 @@ export async function getProgrammeTuition(): Promise<ProgrammeTuitionItem[]> {
       durationYears: parseInt(r.duration_years ?? "0", 10) || 0,
       tuitionPerAnnumNaira: parseInt(r.tuition_per_annum_naira ?? "0", 10) || 0,
     }));
+}
+
+// ============================================================
+// Undergraduate course catalogue (Courses_UG tab)
+// ============================================================
+
+export type CourseUGItem = {
+  code: string;
+  title: string;
+  faculty: string;
+  hostingDepartment: string;
+  semester: number;
+  unit: number;
+  prerequisites?: string[];
+};
+
+// Headers in the sheet may use different spacing/casing, so match each column
+// against a list of plausible lowercased header names.
+function sheetCell(row: SheetRow, names: string[]): string {
+  for (const name of names) {
+    const value = row[name];
+    if (value !== undefined && value !== "") return value;
+  }
+  return "";
+}
+
+export async function getCoursesUG(): Promise<CourseUGItem[]> {
+  const csv = await fetchSheetCsv("Courses_UG");
+  if (!csv) return [];
+  const sheet = parseSheet(csv);
+  if (!hasHeaders(sheet, ["code"])) return [];
+
+  return sheet.rows
+    .filter((r) => isEnabled(r.active) && r.code)
+    .map((r) => {
+      const prerequisites = sheetCell(r, ["prerequisites", "pre_requisites", "prereq"]);
+      return {
+        code: r.code!.trim().toUpperCase(),
+        title: sheetCell(r, ["title", "course title", "course_title"]) || r.code!,
+        faculty: sheetCell(r, ["faculty", "fac"]),
+        hostingDepartment:
+          sheetCell(r, ["hosting department", "hosting_department", "department", "dept", "host dept"]),
+        semester: parseInt(sheetCell(r, ["semester", "sem"]), 10) || 1,
+        unit: parseInt(sheetCell(r, ["unit", "units", "credit units", "credit_units"]), 10) || 0,
+        prerequisites: prerequisites
+          ? prerequisites.split(/[,;]/).map((p) => p.trim()).filter(Boolean)
+          : undefined,
+      };
+    })
+    .filter((c) => c.hostingDepartment !== "");
 }
