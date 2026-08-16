@@ -23,10 +23,13 @@ export default async function FeesPage() {
 
   const isStudent = user.role === "STUDENT";
   const isBursary = user.role === "BURSARY";
+  // Applicants hold FEES W and settle their own invoices, so they share the
+  // self-service view (own account, invoices and payment buttons).
+  const selfService = isStudent || user.role === "APPLICANT";
   const readOnly = can(user.role, "FEES", "R");
 
-  // ---- student view ----
-  if (isStudent) {
+  // ---- self-service view (student / applicant) ----
+  if (selfService) {
     const [account, invoices, payments, waivers, scholarships, plans] = await Promise.all([
       prisma.feeAccount.findUnique({ where: { userId: user.id } }),
       prisma.invoice.findMany({

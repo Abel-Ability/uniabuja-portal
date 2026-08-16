@@ -9,6 +9,8 @@ import {
   getMenuForRole,
   dashboardForRole,
   visibleModules,
+  permissionsFor,
+  can,
   PORTAL_MODULES,
   CROSS_CUTTING_MODULES,
   SBC_MENU,
@@ -39,7 +41,7 @@ describe("post-login landing routing", () => {
       LECTURER: "/portal/lecturer",
       HOD: "/portal/hod",
       DEAN: "/portal/dean",
-      REGISTRY: "/portal/admin",
+      REGISTRY: "/portal/applications",
       BURSARY: "/portal/bursary",
       STUDENT_AFFAIRS: "/portal/hostels",
       EXAMS_RECORDS: "/portal/results",
@@ -288,5 +290,105 @@ describe("role labels completeness", () => {
     for (const role of ROLES) {
       expect(ROLE_LABELS[role], `label for ${role}`).toBeTruthy();
     }
+  });
+});
+
+// --- Remaining role workspace navigation recovery (Phase 12) ----------------
+
+const GENERIC_ROLES = ROLES.filter((r) => getMenuForRole(r).length === 0);
+
+// href -> ModuleKey for every generic sidebar link.
+const MODULE_HREF_TO_KEY: Record<string, string> = {
+  ...Object.fromEntries(PORTAL_MODULES.map((m) => [`/portal/${m.slug}`, m.key])),
+  ...Object.fromEntries(
+    Object.entries(CROSS_CUTTING_MODULES).map(([k, v]) => [v!.href, k as string]),
+  ),
+};
+
+const WORKSPACE_PREFIX: Record<string, string> = {
+  HOD: "/portal/hod",
+  DEAN: "/portal/dean",
+  VC: "/portal/vc",
+  BURSARY: "/portal/bursary",
+  STUDENT: "/portal/student",
+  LECTURER: "/portal/lecturer",
+  SBC_CHAIRMAN: "/portal/sbc",
+  DVC_OVERSIGHT: "/portal/dvc",
+  GOVERNANCE_OVERSIGHT_MEMBER: "/portal/dvc",
+};
+
+// The shared /portal/results page renders a read-only view for roles with
+// EXAMS_RECORDS read access; roles with a dedicated results surface are routed
+// to it instead (see src/app/portal/results/page.tsx).
+const SHARED_RESULTS_ROLES = ["REGISTRY", "PG_SCHOOL", "TIMETABLE", "BURSARY", "STUDENT_AFFAIRS"];
+
+describe("remaining role workspace navigation recovery", () => {
+  it("keeps the nine dedicated workspace menus untouched", () => {
+    const dedicated = ROLES.filter((r) => getMenuForRole(r).length > 0);
+    expect(dedicated.sort()).toEqual(
+      ["HOD", "DEAN", "VC", "BURSARY", "STUDENT", "LECTURER", "SBC_CHAIRMAN", "DVC_OVERSIGHT", "GOVERNANCE_OVERSIGHT_MEMBER"].sort(),
+    );
+  });
+
+  it("lands every generic-fallback role on a sidebar link it can access", () => {
+    for (const role of GENERIC_ROLES) {
+      const landing = landingForRole(role);
+      expect(genericSidebarHrefs(role), `${role} landing ${landing}`).toContain(landing);
+    }
+  });
+
+  it("never lands a role on the system admin console without ADMIN_SYSTEM access", () => {
+    for (const role of ROLES) {
+      if (landingForRole(role) === "/portal/admin") {
+        expect(can(role, "ADMIN_SYSTEM", "R"), role).toBe(true);
+      }
+    }
+  });
+
+  it("lands REGISTRY on its admissions console, not the admin console", () => {
+    expect(landingForRole("REGISTRY")).toBe("/portal/applications");
+    expect(can("REGISTRY", "ADMISSIONS", "R")).toBe(true);
+  });
+
+  it("dedicated menus only link to the role's own workspace or modules it can access", () => {
+    for (const role of ROLES) {
+      const menu = getMenuForRole(role);
+      if (menu.length === 0) continue;
+      const prefix = WORKSPACE_PREFIX[role];
+      for (const item of menu) {
+        if (prefix && item.href.startsWith(prefix)) continue;
+        if (role === "VC" && item.href === "/portal/appointments") continue;
+        const key = MODULE_HREF_TO_KEY[item.href];
+        expect(key, `${role} href ${item.href} maps to a module`).toBeTruthy();
+        expect(
+          permissionsFor(role, key as never).length,
+          `${role} access to ${item.href}`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("keeps every generic sidebar link on a module the role can access", () => {
+    for (const role of GENERIC_ROLES) {
+      for (const href of genericSidebarHrefs(role)) {
+        const key = MODULE_HREF_TO_KEY[href];
+        expect(key, `${role} generic link ${href}`).toBeTruthy();
+        expect(permissionsFor(role, key as never).length, `${role} link ${href}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("routes EXAMS_RECORDS read-only roles to the shared results page", () => {
+    for (const role of SHARED_RESULTS_ROLES) {
+      expect(resultsForRole(role), `resultsForRole(${role})`).toBeNull();
+      expect(can(role, "EXAMS_RECORDS", "R"), `${role} read access`).toBe(true);
+    }
+  });
+
+  it("grants applicants the self-service fee surface they are linked to", () => {
+    expect(genericSidebarHrefs("APPLICANT")).toContain("/portal/fees");
+    expect(can("APPLICANT", "FEES", "W")).toBe(true);
+    expect(genericSidebarHrefs("APPLICANT")).toContain("/portal/postgraduate");
+    expect(can("APPLICANT", "PG_RESEARCH", "R")).toBe(true);
   });
 });

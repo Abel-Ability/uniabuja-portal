@@ -10,7 +10,7 @@ import { ApproveResultButton } from "./approve-result-button";
 import { FinaliseResultButton } from "./finalise-result-button";
 import { FileAppealForm, ReviewAppealButton, AppealStatus } from "./appeal-form";
 import { LogMisconductForm, AdvanceMisconductButton } from "./misconduct-form";
-import { resultsForRole } from "@/lib/constants";
+import { can, resultsForRole } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -436,8 +436,81 @@ export default async function ResultsPage() {
     );
   }
 
+  // Read-only overview for roles granted read access to results (REGISTRY,
+  // PG_SCHOOL, TIMETABLE, BURSARY) whose results live on this shared page. This
+  // keeps their sidebar "Exams & Records" link resolving instead of bouncing
+  // them to the dashboard. Roles with a dedicated results surface are routed to
+  // it below instead.
+  if (!resultsForRole(user.role) && can(user.role, "EXAMS_RECORDS", "R")) {
+    const [pipeline, appeals] = await Promise.all([
+      prisma.result.findMany({
+        orderBy: { updatedAt: "desc" },
+        take: 50,
+        include: { course: true, user: true, submittedBy: true },
+      }),
+      prisma.appeal.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { user: true } }),
+    ]);
+
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          eyebrow="Module 3 · Read-only"
+          title="Exams & Records"
+          description="Institutional read-only view of the grade pipeline. No grade or course mutation."
+        />
+        <div className="mx-auto max-w-6xl space-y-8 px-4 sm:px-8">
+          <section aria-label="Grade pipeline">
+            <SectionHeading
+              title="Grade pipeline"
+              subtitle={`${pipeline.length} recent result records across the approval stages.`}
+            />
+            {pipeline.length === 0 ? (
+              <EmptyState title="No results on record" />
+            ) : (
+              <Table headers={["Student", "Course", "Session", "Total", "Grade", "Submitted by", "Status"]}>
+                {pipeline.map((r) => (
+                  <tr key={r.id}>
+                    <td className="px-4 py-3 font-medium text-slate">{r.user.fullName}</td>
+                    <td className="px-4 py-3 text-slate">{r.course.code} · {r.course.title}</td>
+                    <td className="px-4 py-3 text-slate/70">{r.academicSession} · S{r.semester}</td>
+                    <td className="px-4 py-3 text-slate">{r.total ?? "—"}</td>
+                    <td className="px-4 py-3 font-head font-bold text-slate">{r.grade ?? "—"}</td>
+                    <td className="px-4 py-3 text-slate/70">{r.submittedBy?.fullName ?? "—"}</td>
+                    <td className="px-4 py-3"><StatusBadge status={r.gradeStatus} /></td>
+                  </tr>
+                ))}
+              </Table>
+            )}
+          </section>
+
+          <section aria-label="Appeal register">
+            <SectionHeading
+              title="Appeal register"
+              subtitle={`${appeals.length} recent grade and misconduct appeals.`}
+            />
+            {appeals.length === 0 ? (
+              <EmptyState title="No appeals on record" />
+            ) : (
+              <Table headers={["Student", "Type", "Reference", "Grounds", "Status"]}>
+                {appeals.map((a) => (
+                  <tr key={a.id}>
+                    <td className="px-4 py-3 font-medium text-slate">{a.user.fullName}</td>
+                    <td className="px-4 py-3 text-slate">{a.caseType}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate/70">{a.caseRef ?? "—"}</td>
+                    <td className="px-4 py-3 text-slate/70">{a.grounds}</td>
+                    <td className="px-4 py-3"><AppealStatus status={a.status} /></td>
+                  </tr>
+                ))}
+              </Table>
+            )}
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   // Roles with a dedicated results surface are routed there instead of this
-  // generic module page. Everyone else (e.g. REGISTRY) keeps the shared page.
+  // generic module page.
   const dedicated = resultsForRole(user.role);
   redirect(dedicated ?? "/portal/dashboard");
 }

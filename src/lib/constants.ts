@@ -657,7 +657,10 @@ export function landingForRole(role: string): string {
     case "DEAN":
       return "/portal/dean";
     case "REGISTRY":
-      return "/portal/admin";
+      // The Registry Office has no ADMIN_SYSTEM permission; /portal/admin renders
+      // a "No access" card for it. Its primary console is the Admissions page
+      // (ADMISSIONS RWA), so the Registry lands there.
+      return "/portal/applications";
     case "BURSARY":
       return "/portal/bursary";
     case "STUDENT_AFFAIRS":

@@ -154,6 +154,67 @@ export default async function PostgraduatePage() {
     );
   }
 
+  if (user.role === "APPLICANT") {
+    const [pgProgrammes, application] = await Promise.all([
+      prisma.programme.findMany({
+        where: { programmeType: "PG" },
+        orderBy: { code: "asc" },
+      }),
+      prisma.pGApplication.findFirst({
+        where: { userId: user.id },
+        include: { programme: true },
+      }),
+    ]);
+
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          eyebrow="Module 9 · Postgraduate"
+          title="Postgraduate & Research"
+          description="Review the postgraduate programme catalogue and track any application on your record."
+        />
+        <div className="mx-auto max-w-6xl space-y-8 px-4 sm:px-8">
+          <section aria-label="Programmes">
+            <SectionHeading
+              title="Postgraduate programmes"
+              subtitle={`${pgProgrammes.length} programmes on offer. PG applications open to enrolled students.`}
+            />
+            {pgProgrammes.length === 0 ? (
+              <EmptyState title="No programmes published yet" />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {pgProgrammes.map((p) => (
+                  <Card key={p.id}>
+                    <p className="font-mono text-xs text-slate/70">{p.code}</p>
+                    <p className="font-head font-semibold text-slate">{p.name}</p>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section aria-label="Application">
+            <SectionHeading
+              title="My postgraduate application"
+              subtitle="Status of any PG application associated with this account."
+            />
+            {!application ? (
+              <EmptyState title="No postgraduate application" body="Postgraduate applications open to enrolled students after admission." />
+            ) : (
+              <Card className="space-y-2">
+                <p className="font-head text-lg font-bold text-slate">{application.programme?.name ?? "Postgraduate programme"}</p>
+                <p className="text-sm text-slate/75">
+                  {application.programme?.code} · Applied {fmtDate(application.createdAt)}
+                </p>
+                <div className="mt-2"><StatusBadge status={application.screeningStatus} /></div>
+              </Card>
+            )}
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   if (user.role === "PG_SCHOOL") {
     const [applications, assignments, theses] = await Promise.all([
       prisma.pGApplication.findMany({
