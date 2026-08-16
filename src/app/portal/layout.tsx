@@ -3,6 +3,7 @@ import { getCurrentSession } from "@/lib/session";
 import {
   visibleModules,
   PORTAL_MODULES,
+  CROSS_CUTTING_MODULES,
   getMenuForRole,
   dashboardForRole,
 } from "@/lib/constants";
@@ -11,12 +12,7 @@ import { IdleTimer } from "@/components/idle-timer";
 
 export const dynamic = "force-dynamic";
 
-const CROSS_CUTTING: Record<string, { href: string; label: string; description: string }> = {
-  ADMIN_SYSTEM: { href: "/portal/admin", label: "Admin / System", description: "Users, feature flags, API keys" },
-  DPO: { href: "/portal/dpo", label: "Data Protection", description: "DPO dashboard, subject requests" },
-  COMMUNICATIONS: { href: "/portal/communications", label: "Communications", description: "Announcements and templates" },
-  HELPDESK: { href: "/portal/helpdesk", label: "Helpdesk", description: "Tickets and live chat" },
-};
+const CROSS_CUTTING = CROSS_CUTTING_MODULES;
 
 export default async function PortalLayout({
   children,
@@ -52,7 +48,7 @@ export default async function PortalLayout({
       })),
       ...Object.keys(CROSS_CUTTING)
         .filter((k) => keys.includes(k as never))
-        .map((k) => CROSS_CUTTING[k]),
+        .map((k) => CROSS_CUTTING[k as keyof typeof CROSS_CUTTING_MODULES]!),
     ];
   }
 

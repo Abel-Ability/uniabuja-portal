@@ -10,6 +10,7 @@ import {
   dashboardForRole,
   visibleModules,
   PORTAL_MODULES,
+  CROSS_CUTTING_MODULES,
   SBC_MENU,
   DVC_GOVERNANCE_MENU,
   STUDENT_MENU,
@@ -62,6 +63,13 @@ describe("post-login landing routing", () => {
   it("falls back to the portal dashboard for unknown roles", () => {
     expect(landingForRole("SOME_UNKNOWN_ROLE")).toBe("/portal/dashboard");
   });
+
+  it("gives the /portal root a redirect page instead of a dead 404 route", () => {
+    expect(existsSync(resolve(PORTAL_ROOT, "page.tsx"))).toBe(true);
+    for (const role of ROLES) {
+      expect(landingForRole(role), `${role} landing from /portal`).toMatch(/^\/portal\//);
+    }
+  });
 });
 
 describe("results routing", () => {
@@ -87,7 +95,19 @@ describe("results routing", () => {
   });
 });
 
-const CROSS_CUTTING_KEYS = ["ADMIN_SYSTEM", "DPO", "COMMUNICATIONS", "HELPDESK"] as const;
+const CROSS_CUTTING_KEYS = Object.keys(CROSS_CUTTING_MODULES);
+
+// The generic sidebar = PORTAL_MODULES filtered by the matrix, then
+// CROSS_CUTTING_MODULES filtered by the matrix (see src/app/portal/layout.tsx).
+function genericSidebarHrefs(role: string): string[] {
+  const keys = visibleModules(role);
+  return [
+    ...PORTAL_MODULES.filter((m) => keys.includes(m.key)).map((m) => `/portal/${m.slug}`),
+    ...CROSS_CUTTING_KEYS.filter((k) => keys.includes(k as never)).map(
+      (k) => CROSS_CUTTING_MODULES[k as keyof typeof CROSS_CUTTING_MODULES]!.href,
+    ),
+  ];
+}
 
 describe("workspace menus", () => {
   it("gives every role a non-empty sidebar", () => {
@@ -171,16 +191,81 @@ describe("account-specific help", () => {
           curated.map((m) => m.href),
         );
       } else {
-        const keys = visibleModules(role);
-        const moduleHrefs = PORTAL_MODULES.filter((m) => keys.includes(m.key)).map(
-          (m) => `/portal/${m.slug}`,
+        expect(sections.map((s) => s.href), `${role} generic sections`).toEqual(
+          genericSidebarHrefs(role),
         );
-        expect(sections.map((s) => s.href), `${role} generic sections`).toEqual(moduleHrefs);
       }
       for (const s of sections) {
         expect(routeExists(s.href), `${role} help section route ${s.href}`).toBe(true);
       }
     }
+  });
+
+  it("shows cross-cutting help sections for generic roles that can see them", () => {
+    for (const role of ROLES) {
+      if (getMenuForRole(role).length > 0) continue;
+      const sections = helpSectionsForRole(role);
+      const keys = visibleModules(role);
+      for (const k of CROSS_CUTTING_KEYS) {
+        const m = CROSS_CUTTING_MODULES[k as keyof typeof CROSS_CUTTING_MODULES]!;
+        if (keys.includes(k as never)) {
+          expect(
+            sections.some((s) => s.href === m.href),
+            `${role} help should include cross-cutting module ${m.href}`,
+          ).toBe(true);
+        } else {
+          expect(
+            sections.some((s) => s.href === m.href),
+            `${role} help must not expose ${m.href}`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("keeps IT_ADMIN help aligned with its sidebar (admin + dpo only)", () => {
+    const hrefs = helpSectionsForRole("IT_ADMIN").map((s) => s.href);
+    expect(hrefs).toEqual(["/portal/admin", "/portal/dpo"]);
+    expect(hrefs).not.toContain("/portal/communications");
+    expect(hrefs).not.toContain("/portal/helpdesk");
+    expect(hrefs).not.toContain("/portal/library");
+  });
+
+  it("keeps REGISTRY help aligned with its sidebar (library, communications, helpdesk)", () => {
+    const hrefs = helpSectionsForRole("REGISTRY").map((s) => s.href);
+    expect(hrefs).toContain("/portal/applications");
+    expect(hrefs).toContain("/portal/library");
+    expect(hrefs).toContain("/portal/communications");
+    expect(hrefs).toContain("/portal/helpdesk");
+    expect(hrefs).not.toContain("/portal/admin");
+    expect(hrefs).not.toContain("/portal/dpo");
+  });
+
+  it("lists help sections in the same order as the sidebar", () => {
+    for (const role of ROLES) {
+      const curated = getMenuForRole(role);
+      const expected =
+        curated.length > 0 ? curated.map((m) => m.href) : genericSidebarHrefs(role);
+      expect(
+        helpSectionsForRole(role).map((s) => s.href),
+        `help section order for ${role}`,
+      ).toEqual(expected);
+    }
+  });
+
+  it("has no duplicate help section hrefs for any role", () => {
+    for (const role of ROLES) {
+      const hrefs = helpSectionsForRole(role).map((s) => s.href);
+      expect(new Set(hrefs).size, `duplicate help hrefs for ${role}`).toBe(hrefs.length);
+    }
+  });
+
+  it("keeps VERIFIER help to its read-only verification scope", () => {
+    const content = helpForRole("VERIFIER");
+    const hrefs = helpSectionsForRole("VERIFIER").map((s) => s.href);
+    expect(hrefs).toEqual(["/portal/results", "/portal/transcripts"]);
+    expect(content.cannotDo.join(" ").toLowerCase()).toContain("modify");
+    expect(content.cannotDo.join(" ").toLowerCase()).toContain("financial");
   });
 
   it("resolves context-aware help only within the user's own role", () => {

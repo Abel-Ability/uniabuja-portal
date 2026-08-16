@@ -1,7 +1,9 @@
 import {
   PORTAL_MODULES,
+  CROSS_CUTTING_MODULES,
   visibleModules,
   dashboardForRole,
+  type ModuleKey,
 } from "@/lib/constants";
 
 export type HelpFaq = { q: string; a: string };
@@ -1100,17 +1102,25 @@ function genericFallback(role: string): RoleHelpContent {
 
 // Resolves the sidebar module sections for roles that use the generic
 // PORTAL_MODULES fallback. Sections mirror exactly what the shell renders so
-// the help always matches the menu.
+// the help always matches the menu (including cross-cutting modules).
 export function helpSectionsForRole(role: string): HelpSection[] {
   const curated = ROLE_HELP[role]?.sections;
   if (curated && curated.length > 0) return curated;
 
   const keys = visibleModules(role);
-  return PORTAL_MODULES.filter((m) => keys.includes(m.key)).map((m) => ({
-    href: `/portal/${m.slug}`,
-    label: m.title,
-    body: m.description,
-  }));
+  return [
+    ...PORTAL_MODULES.filter((m) => keys.includes(m.key)).map((m) => ({
+      href: `/portal/${m.slug}`,
+      label: m.title,
+      body: m.description,
+    })),
+    ...Object.keys(CROSS_CUTTING_MODULES)
+      .filter((k) => keys.includes(k as ModuleKey))
+      .map((k) => {
+        const c = CROSS_CUTTING_MODULES[k as ModuleKey]!;
+        return { href: c.href, label: c.label, body: c.description };
+      }),
+  ];
 }
 
 // Context-aware help: given the current pathname, return the sidebar section

@@ -512,6 +512,17 @@ export const PORTAL_MODULES: {
   { key: "HEALTH", slug: "health", title: "Health / Clinic Services", description: "VC oversight only" },
 ];
 
+// Cross-cutting modules appended after PORTAL_MODULES in the generic sidebar.
+// Order here is the order they appear in the menu; help mirrors this exactly.
+export const CROSS_CUTTING_MODULES: Partial<
+  Record<ModuleKey, { href: string; label: string; description: string }>
+> = {
+  ADMIN_SYSTEM: { href: "/portal/admin", label: "Admin / System", description: "Users, feature flags, API keys" },
+  DPO: { href: "/portal/dpo", label: "Data Protection", description: "DPO dashboard, subject requests" },
+  COMMUNICATIONS: { href: "/portal/communications", label: "Communications", description: "Announcements and templates" },
+  HELPDESK: { href: "/portal/helpdesk", label: "Helpdesk", description: "Tickets and live chat" },
+};
+
 // ------------------------------------------------------------------
 // Academic sessions, semesters, student categories
 // ------------------------------------------------------------------

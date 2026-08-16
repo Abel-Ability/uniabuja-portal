@@ -28,10 +28,12 @@ export function ProposeAppointmentForm({
   canProposeHod,
   canProposeDean,
   staff,
+  searching = true,
 }: {
   canProposeHod: boolean;
   canProposeDean: boolean;
   staff: { id: string; label: string }[];
+  searching?: boolean;
 }) {
   const [state, action, pending] = useActionState(proposeAppointment, null);
 
@@ -43,7 +45,9 @@ export function ProposeAppointmentForm({
             Appointee
           </label>
           <select id="appointeeId" name="appointeeId" required className={inputClass}>
-            <option value="">Select staff member…</option>
+            <option value="">
+              {searching ? "Select staff member…" : "Search for a staff member first…"}
+            </option>
             {staff.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.label}

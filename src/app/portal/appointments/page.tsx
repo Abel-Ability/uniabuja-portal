@@ -3,12 +3,15 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSession } from "@/lib/session";
 import { ROLE_LABELS } from "@/lib/constants";
-import { PageHeader, Card, Table, Badge, StatusBadge, SectionHeading, EmptyState } from "@/components/ui";
+import { PageHeader, Card, Table, Badge, StatusBadge, SectionHeading, EmptyState, PillButton } from "@/components/ui";
 import { ProposeAppointmentForm, AppointmentActionButtons } from "./appointment-form";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Appointments & Governance" };
+
+const searchInputClass =
+  "w-full max-w-sm rounded-xl border border-slate/25 px-4 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand/30";
 
 const ROLE_TONE: Record<string, "brand" | "slate" | "gold"> = {
   HOD: "brand",
@@ -19,11 +22,19 @@ const ROLE_TONE: Record<string, "brand" | "slate" | "gold"> = {
 const fmt = (d: Date | null) =>
   d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
-export default async function AppointmentsPage() {
+export default async function AppointmentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   const { user } = session;
   const role = user.role;
+
+  const params = await searchParams;
+  const q = (params.q ?? "").trim();
+  const searching = q.length >= 2;
 
   const canProposeHod = role === "DEAN";
   const canProposeDean = role === "DVC_OVERSIGHT";
@@ -42,10 +53,19 @@ export default async function AppointmentsPage() {
         recorder: true,
       },
     }),
-    prisma.user.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { fullName: "asc" },
-    }),
+    searching
+      ? prisma.user.findMany({
+          where: {
+            status: "ACTIVE",
+            OR: [
+              { fullName: { contains: q, mode: "insensitive" } },
+              { username: { contains: q, mode: "insensitive" } },
+            ],
+          },
+          orderBy: { fullName: "asc" },
+          take: 50,
+        })
+      : [],
   ]);
 
   const staffOptions = staff.map((s) => ({ id: s.id, label: `${s.fullName} · ${ROLE_LABELS[s.role] ?? s.role}${s.department ? ` · ${s.department}` : ""}` }));
@@ -74,10 +94,33 @@ export default async function AppointmentsPage() {
           />
           {canProposeHod || canProposeDean ? (
             <Card>
+              <form
+                action="/portal/appointments"
+                method="get"
+                className="mb-4 flex flex-wrap items-center gap-3"
+              >
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={q}
+                  minLength={2}
+                  placeholder="Search staff by name or username (min 2 characters)…"
+                  className={searchInputClass}
+                />
+                <PillButton type="submit">Search</PillButton>
+              </form>
+              <p className="mb-2 text-sm text-slate/70">
+                {searching
+                  ? staffOptions.length > 0
+                    ? `Showing up to ${staffOptions.length} matching staff.`
+                    : "No staff match that search."
+                  : "Search for a staff member to narrow the appointee list."}
+              </p>
               <ProposeAppointmentForm
                 canProposeHod={canProposeHod}
                 canProposeDean={canProposeDean}
                 staff={staffOptions}
+                searching={searching}
               />
             </Card>
           ) : null}

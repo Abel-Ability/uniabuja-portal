@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSession } from "@/lib/session";
@@ -36,20 +37,35 @@ function credentialStatus(c: { revokedAt: Date | null; expiresAt: Date | null })
       : "ACTIVE";
 }
 
-export default async function AdminPage() {
+const USERS_PER_PAGE = 50;
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
   const isAdmin = can(session.user.role, "ADMIN_SYSTEM", "W");
   const canView = can(session.user.role, "ADMIN_SYSTEM", "R");
 
-  const [users, featureFlags, credentials, auditLogs, totalUsers, activeUsers, flagsOn, preference] =
+  const params = await searchParams;
+  const page = Math.max(1, Number(params.page) || 1);
+  const totalUsers = await prisma.user.count();
+  const totalPages = Math.max(1, Math.ceil(totalUsers / USERS_PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+
+  const [users, featureFlags, credentials, auditLogs, activeUsers, flagsOn, preference] =
     await Promise.all([
-      prisma.user.findMany({ orderBy: { createdAt: "asc" } }),
+      prisma.user.findMany({
+        orderBy: { createdAt: "asc" },
+        skip: (safePage - 1) * USERS_PER_PAGE,
+        take: USERS_PER_PAGE,
+      }),
       prisma.featureFlag.findMany({ orderBy: { key: "asc" } }),
       prisma.apiCredential.findMany({ orderBy: { issuedAt: "desc" } }),
       prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
-      prisma.user.count(),
       prisma.user.count({ where: { status: "ACTIVE" } }),
       prisma.featureFlag.count({ where: { enabled: true } }),
       prisma.notificationPreference.findUnique({ where: { userId: session.userId } }),
@@ -128,6 +144,38 @@ export default async function AdminPage() {
                   </tr>
                 ))}
               </Table>
+              <div className="mt-4 flex items-center justify-between gap-4 text-sm text-slate/70">
+                <span>
+                  Showing {Math.min(totalUsers, (safePage - 1) * USERS_PER_PAGE + 1)}–
+                  {Math.min(totalUsers, safePage * USERS_PER_PAGE)} of {totalUsers.toLocaleString()}{" "}
+                  users
+                </span>
+                <div className="flex items-center gap-3">
+                  {safePage > 1 ? (
+                    <Link
+                      href={`/portal/admin?page=${safePage - 1}`}
+                      className="font-medium text-brand hover:underline"
+                    >
+                      Previous
+                    </Link>
+                  ) : (
+                    <span className="cursor-not-allowed text-slate/40">Previous</span>
+                  )}
+                  <span>
+                    Page {safePage} of {totalPages.toLocaleString()}
+                  </span>
+                  {safePage < totalPages ? (
+                    <Link
+                      href={`/portal/admin?page=${safePage + 1}`}
+                      className="font-medium text-brand hover:underline"
+                    >
+                      Next
+                    </Link>
+                  ) : (
+                    <span className="cursor-not-allowed text-slate/40">Next</span>
+                  )}
+                </div>
+              </div>
             </section>
 
             <section>
