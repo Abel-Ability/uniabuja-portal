@@ -40,7 +40,7 @@ export function DeadlineTicket({ deadline }: { deadline: Deadline | null }) {
   return (
     <span
       aria-label={`${deadline.title} — ${daysText} — ${dateText}`}
-      className="inline-flex items-center gap-2 rounded-full border border-gold/60 bg-white/85 py-1 pl-1.5 pr-3 shadow-md shadow-brand-strong/20 backdrop-blur-sm dark:bg-slate-800/85"
+      className="inline-flex h-8 items-center gap-2 rounded-full border border-gold/60 bg-white/85 pl-1.5 pr-3 shadow-md shadow-brand-strong/20 backdrop-blur-sm dark:bg-slate-800/85"
     >
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white">
         <CalendarClock className="h-4 w-4" aria-hidden="true" />

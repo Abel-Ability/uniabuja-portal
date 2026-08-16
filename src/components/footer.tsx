@@ -3,7 +3,6 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 const QUICK_LINKS = [
   { href: "/apply", label: "Apply for Admission" },
-  { href: "/login", label: "Applicant Portal" },
   { href: "/faculties", label: "Faculties & Departments" },
   { href: "/institutes", label: "Institutes & Centres" },
 ];

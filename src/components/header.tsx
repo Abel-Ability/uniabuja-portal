@@ -6,7 +6,6 @@ import { BRAND } from "@/lib/constants";
 import { AnnouncementTicker } from "@/components/announcement-ticker";
 import { DeadlineTicket } from "@/components/deadline-ticket";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PillLink } from "@/components/ui";
 import type { Deadline } from "@/components/floating-deadline";
 
 export function LogoMark({ size = 36 }: { size?: number }) {
@@ -25,7 +24,8 @@ export function LogoMark({ size = 36 }: { size?: number }) {
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/apply", label: "Apply" },
-  { href: "/notices", label: "Announcements" },
+  { href: "/faculties", label: "Faculties & Departments" },
+  { href: "/institutes", label: "Institutes & Centres" },
 ];
 
 export function Header({ deadline }: { deadline?: Deadline | null }) {
@@ -115,13 +115,12 @@ export function Header({ deadline }: { deadline?: Deadline | null }) {
       <AnnouncementTicker />
 
       <div className="mt-2 flex flex-wrap items-center justify-start gap-3 px-4 text-xs sm:px-6">
-        <PillLink
+        <Link
           href="/notices"
-          variant="outline"
-          className="text-slate hover:bg-white/10 hover:text-white rounded-full px-3 py-1"
+          className="inline-flex h-8 items-center gap-2 rounded-full border-2 border-gold/60 px-3 font-head text-xs font-semibold text-black transition-all hover:border-gold hover:bg-white/10 dark:text-white"
         >
           View all recent announcements
-        </PillLink>
+        </Link>
         <DeadlineTicket deadline={deadline ?? null} />
       </div>
 

@@ -87,15 +87,15 @@ export function Hero({
         <div className="anim-fade-up delay-3 mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
           <Link
             href="/apply"
-            className="btn-sheen inline-flex items-center justify-center gap-2 rounded-full bg-brand-strong px-[42px] py-[21px] text-center font-head text-[21px] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-xl"
+            className="btn-sheen inline-flex items-center justify-center gap-2 rounded-full bg-brand-strong px-[25px] py-[8px] text-center font-head text-[21px] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-xl"
           >
             Apply Now
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/80 bg-white/10 px-[42px] py-[21px] text-center font-head text-[21px] font-semibold text-white backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white hover:text-slate"
+            className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/80 bg-white/10 px-[25px] py-[8px] text-center font-head text-[21px] font-semibold text-white backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white hover:text-slate"
           >
-            Check Admission / Portal Login
+            Portal Login
           </Link>
         </div>
         <div className="anim-fade-up delay-5 mt-6 grid grid-cols-1 gap-4 border-t border-white/25 pt-6 sm:grid-cols-2 lg:grid-cols-4">
