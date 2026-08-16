@@ -99,21 +99,25 @@ async function main(): Promise<void> {
 
   console.log("  truncating target tables...");
   await target!.query(
-    `TRUNCATE TABLE ${tables.map((t) => `"public"."${t}"`).join(", ")} CASCADE RESTART IDENTITY`
+    `TRUNCATE TABLE ${tables.map((t) => `"public"."${t}"`).join(", ")} RESTART IDENTITY CASCADE`
   );
 
   const totals: Record<string, number> = {};
   for (const t of order) {
     const colsRes = await source.query(
-      `SELECT column_name FROM information_schema.columns
+      `SELECT column_name, data_type FROM information_schema.columns
        WHERE table_schema='public' AND table_name=$1 AND is_generated='NEVER'
        ORDER BY ordinal_position`,
       [t]
     );
-    const cols = colsRes.rows.map((r) => r.column_name as string);
+    const colDefs = colsRes.rows.map((r) => ({ name: r.column_name as string, type: r.data_type as string }));
+    const cols = colDefs.map((c) => c.name);
     if (cols.length === 0) continue;
 
-    const data = await source.query(`SELECT ${cols.map((c) => `"${c}"`).join(", ")} FROM "public"."${t}"`);
+    const selectExpr = colDefs
+      .map((c) => (c.type === "json" || c.type === "jsonb" ? `"${c.name}"::text AS "${c.name}"` : `"${c.name}"`))
+      .join(", ");
+    const data = await source.query(`SELECT ${selectExpr} FROM "public"."${t}"`);
     const rows = data.rows;
     if (rows.length === 0) {
       console.log(`  ${t}: 0 rows`);
@@ -124,8 +128,18 @@ async function main(): Promise<void> {
     for (const batch of chunk(rows, BATCH)) {
       const values: unknown[] = [];
       const tuples = batch.map((row) => {
-        const placeholders = cols.map((c) => `$${values.length + 1 + cols.indexOf(c)}`).join(", ");
-        values.push(...cols.map((c) => row[c]));
+        const placeholders = colDefs.map((c) => `$${values.length + 1 + colDefs.indexOf(c)}`).join(", ");
+        for (const c of colDefs) {
+          let v = row[c.name];
+          if ((c.type === "json" || c.type === "jsonb") && typeof v === "string") {
+            try {
+              JSON.parse(v);
+            } catch {
+              v = JSON.stringify(v);
+            }
+          }
+          values.push(v);
+        }
         return `(${placeholders})`;
       });
       const sql = `INSERT INTO "public"."${t}" (${cols.map((c) => `"${c}"`).join(", ")}) VALUES ${tuples.join(", ")}`;
