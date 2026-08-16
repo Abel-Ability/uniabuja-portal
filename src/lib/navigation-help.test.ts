@@ -20,9 +20,11 @@ import {
   VC_MENU,
 } from "@/lib/constants";
 import {
+  ROLE_HELP,
   helpForRole,
   helpSectionsForRole,
   helpSectionForPath,
+  helpDashboardForRole,
 } from "@/lib/help";
 
 const PORTAL_ROOT = resolve(__dirname, "../app/portal");
@@ -390,5 +392,101 @@ describe("remaining role workspace navigation recovery", () => {
     expect(can("APPLICANT", "FEES", "W")).toBe(true);
     expect(genericSidebarHrefs("APPLICANT")).toContain("/portal/postgraduate");
     expect(can("APPLICANT", "PG_RESEARCH", "R")).toBe(true);
+  });
+});
+
+// --- Role-specific account help: global coverage and verification ------------
+
+describe("account-specific help global coverage", () => {
+  it("provides curated help content for every authenticated role", () => {
+    expect(Object.keys(ROLE_HELP).sort(), "ROLE_HELP keys match ROLES").toEqual([...ROLES].sort());
+    for (const role of ROLES) {
+      expect(helpForRole(role), `${role} must use curated content, not the fallback`).toBe(
+        ROLE_HELP[role],
+      );
+    }
+  });
+
+  it("gives each named workspace its own help content", () => {
+    expect(helpForRole("HOD")).not.toBe(helpForRole("DEAN"));
+    expect(helpForRole("HOD")).not.toBe(helpForRole("STUDENT"));
+    expect(helpForRole("VC")).not.toBe(helpForRole("BURSARY"));
+    expect(helpForRole("VC")).not.toBe(helpForRole("SBC_CHAIRMAN"));
+    expect(helpForRole("LECTURER")).not.toBe(helpForRole("STUDENT"));
+    // DVC and Governance share an identical, read-only workspace by design, so
+    // they intentionally share the same help content object.
+    expect(helpForRole("DVC_OVERSIGHT")).toBe(helpForRole("GOVERNANCE_OVERSIGHT_MEMBER"));
+  });
+
+  it("keeps HOD, DEAN, VC, BURSARY, LECTURER, STUDENT, DVC, GOVERNANCE and SBC help inside their own workspace", () => {
+    const expectations: Record<string, { prefix: string; can: string; cannot: string }> = {
+      HOD: { prefix: "/portal/hod", can: "allocate", cannot: "finalise" },
+      DEAN: { prefix: "/portal/dean", can: "faculty", cannot: "finalise" },
+      VC: { prefix: "/portal/vc", can: "university-wide", cannot: "modify" },
+      BURSARY: { prefix: "/portal/bursary", can: "invoices", cannot: "results" },
+      LECTURER: { prefix: "/portal/lecturer", can: "allocated", cannot: "approve" },
+      STUDENT: { prefix: "/portal/student", can: "register", cannot: "approve" },
+      DVC_OVERSIGHT: { prefix: "/portal/dvc", can: "monitor", cannot: "modify" },
+      GOVERNANCE_OVERSIGHT_MEMBER: { prefix: "/portal/dvc", can: "monitor", cannot: "modify" },
+      SBC_CHAIRMAN: { prefix: "/portal/sbc", can: "senate", cannot: "approve" },
+    };
+    for (const [role, exp] of Object.entries(expectations)) {
+      const sectionHrefs = helpSectionsForRole(role).map((s) => s.href);
+      expect(sectionHrefs.length, `${role} sections`).toBeGreaterThan(0);
+      expect(
+        sectionHrefs.some((h) => h.startsWith(exp.prefix)),
+        `${role} must link into its own workspace`,
+      ).toBe(true);
+      for (const href of sectionHrefs) {
+        for (const other of Object.values(WORKSPACE_PREFIX)) {
+          if (other === exp.prefix) continue;
+          expect(href.startsWith(other), `${role} section ${href} leaks into ${other}`).toBe(false);
+        }
+      }
+      const content = helpForRole(role);
+      const text = `${content.workspace} ${content.canDo.join(" ")}`.toLowerCase();
+      expect(text, `${role} mentions its own functions`).toContain(exp.can);
+      expect(
+        content.cannotDo.join(" ").toLowerCase(),
+        `${role} does not claim other roles' actions`,
+      ).toContain(exp.cannot);
+    }
+  });
+
+  it("never resolves another role's workspace path into a help section", () => {
+    for (const [role, own] of Object.entries(WORKSPACE_PREFIX)) {
+      for (const other of Object.values(WORKSPACE_PREFIX)) {
+        if (other === own) continue;
+        expect(
+          helpSectionForPath(role, `${other}/some-page`),
+          `${role} must not resolve ${other}`,
+        ).toBeUndefined();
+      }
+    }
+  });
+
+  it("keeps Help out of the normal module navigation", () => {
+    const moduleHrefs = [
+      ...PORTAL_MODULES.map((m) => `/portal/${m.slug}`),
+      ...Object.values(CROSS_CUTTING_MODULES).map((m) => m!.href),
+    ];
+    expect(moduleHrefs).not.toContain("/portal/help");
+    for (const role of ROLES) {
+      expect(getMenuForRole(role).map((m) => m.href), `${role} menu`).not.toContain("/portal/help");
+      expect(genericSidebarHrefs(role), `${role} sidebar`).not.toContain("/portal/help");
+    }
+  });
+
+  it("provides a real help page route for the shell link", () => {
+    expect(routeExists("/portal/help")).toBe(true);
+  });
+
+  it("points each role's help back to its real dashboard", () => {
+    for (const role of ROLES) {
+      const dash = dashboardForRole(role);
+      expect(helpDashboardForRole(role).href, `${role} help dashboard`).toBe(
+        dash ? dash.href : "/portal/dashboard",
+      );
+    }
   });
 });
