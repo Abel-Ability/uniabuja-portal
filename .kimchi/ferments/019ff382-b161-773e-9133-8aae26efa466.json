@@ -1,0 +1,17 @@
+{
+  "id": "019ff382-b161-773e-9133-8aae26efa466",
+  "name": "hello",
+  "description": "hello",
+  "status": "draft",
+  "worktree": {
+    "path": "C:\\Users\\Osagie\\Desktop\\Website Project\\uniabuja-portal",
+    "branch": "main",
+    "commit": "b4cb9bd905fe09e43765e6867080ade7ef03c384"
+  },
+  "scoping": {},
+  "phases": [],
+  "decisions": [],
+  "memories": [],
+  "createdAt": "2026-08-12T01:07:36.417Z",
+  "updatedAt": "2026-08-12T01:07:36.417Z"
+}

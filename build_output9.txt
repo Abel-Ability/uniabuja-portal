@@ -1,0 +1,72 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 3 errors:
+./src/app/portal/student/view-registration/page.tsx:205:20
+Error: Expected '</', got 'ident'
+  [90m203 |[0m               </[33mTable[0m>
+  [90m204 |[0m
+[31m[1m>[0m [90m205 |[0m               <div style={{ marginTop: [35m1[0m }}>
+  [90m    |[0m                    [31m[1m^^^^^[0m
+  [90m206 |[0m                 <p className=[32m"text-sm text-slate-500"[0m>[33mTotal[0m [33mCredit[0m [33mUnits[0m: {registration.t...
+  [90m207 |[0m               </div>
+  [90m208 |[0m             )}
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/academic-progress/page.tsx:12:14
+Error: You are attempting to export "metadata" from a component marked with "use client", which is disallowed. "metadata" must be resolved on the server before the page component is rendered. Keep your page as a Server Component and move Client Component logic to a separate file. Read more: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#why-generatemetadata-is-server-component-only
+  [90m10 |[0m [36mimport[0m { formatNumber } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m11 |[0m
+[31m[1m>[0m [90m12 |[0m [36mexport[0m [36mconst[0m metadata: [33mMetadata[0m = { title: [32m"Academic Progress"[0m };
+  [90m   |[0m              [31m[1m^^^^^^^^[0m
+  [90m13 |[0m
+  [90m14 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mAcademicProgressPage[0m() {
+  [90m15 |[0m   [36mconst[0m session = requireSession();
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portal/student/academic-progress/page.tsx [Client Component Browser]
+    ./src/app/portal/student/academic-progress/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portal/student/academic-progress/page.tsx [Client Component SSR]
+    ./src/app/portal/student/academic-progress/page.tsx [Server Component]
+
+
+./src/app/portal/student/courses/page.tsx:10:14
+Error: You are attempting to export "metadata" from a component marked with "use client", which is disallowed. "metadata" must be resolved on the server before the page component is rendered. Keep your page as a Server Component and move Client Component logic to a separate file. Read more: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#why-generatemetadata-is-server-component-only
+  [90m 8 |[0m [36mimport[0m { [33mCURRENT_SESSION[0m } [36mfrom[0m [32m"@/lib/constants"[0m;
+  [90m 9 |[0m
+[31m[1m>[0m [90m10 |[0m [36mexport[0m [36mconst[0m metadata: [33mMetadata[0m = { title: [32m"My Courses"[0m };
+  [90m   |[0m              [31m[1m^^^^^^^^[0m
+  [90m11 |[0m
+  [90m12 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mMyCoursesPage[0m() {
+  [90m13 |[0m   [36mconst[0m session = requireSession();
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portal/student/courses/page.tsx [Client Component Browser]
+    ./src/app/portal/student/courses/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portal/student/courses/page.tsx [Client Component SSR]
+    ./src/app/portal/student/courses/page.tsx [Server Component]
+
+
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:205:20)
+    at <unknown> (./src/app/portal/student/academic-progress/page.tsx:12:14)
+    at <unknown> (./src/app/portal/student/courses/page.tsx:10:14)

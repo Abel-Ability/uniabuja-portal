@@ -1,0 +1,37 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 24ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./src/app/portal/student/view-registration/page.tsx:205:18
+Error: Expected '</', got 'ident'
+  [90m203 |[0m               </[33mTable[0m>
+  [90m204 |[0m
+[31m[1m>[0m [90m205 |[0m               <p className=[32m"text-sm text-slate-500"[0m>[33mTotal[0m [33mCredit[0m [33mUnits[0m: {registration.tot...
+  [90m    |[0m                  [31m[1m^^^^^^^^^[0m
+  [90m206 |[0m             )}
+  [90m207 |[0m           </div>
+  [90m208 |[0m         </[33mCard[0m>
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/academic-progress/page.tsx:25:10
+Error: Expected '}', got '<eof>'
+  [90m23 |[0m   useEffect(() => {
+  [90m24 |[0m     loadProgress();
+[31m[1m>[0m [90m25 |[0m   }, []);
+  [90m   |[0m          [31m[1m^[0m
+
+Parsing ecmascript source code failed
+
+
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:205:18)
+    at <unknown> (./src/app/portal/student/academic-progress/page.tsx:25:10)

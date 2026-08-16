@@ -1,0 +1,178 @@
+erDiagram
+    APPLICANT ||--o| NEXT_OF_KIN : has
+    APPLICANT ||--o| SPONSOR : has
+    APPLICANT ||--|| JAMB_DETAIL : has
+    APPLICANT ||--o{ OLEVEL_RESULT : has
+    OLEVEL_RESULT ||--|{ OLEVEL_SUBJECT : contains
+    APPLICANT ||--o{ OTHER_QUALIFICATION : has
+    APPLICANT ||--|| PROGRAMME_CHOICE : selects
+    PROGRAMME_CHOICE }o--|| DEPARTMENT : belongs_to
+    DEPARTMENT }o--|| FACULTY : belongs_to
+    APPLICANT ||--o{ DOCUMENT : uploads
+    APPLICANT ||--o{ PAYMENT : makes
+    APPLICANT ||--|| DECLARATION : signs
+    APPLICANT ||--|| APPLICATION_STATUS : tracked_by
+    APPLICATION_STATUS }o--|| STAFF : reviewed_by
+
+    APPLICANT {
+        uuid applicant_id PK
+        string surname
+        string first_name
+        string other_name
+        date date_of_birth
+        string gender
+        string marital_status
+        string nationality
+        string state_of_origin
+        string lga
+        string nin
+        string phone_primary
+        string phone_alternate
+        string email
+        string home_address
+        string permanent_address
+        string passport_photo_url
+        string blood_group
+        string genotype
+        string application_session
+        datetime created_at
+        datetime updated_at
+    }
+
+    NEXT_OF_KIN {
+        uuid nok_id PK
+        uuid applicant_id FK
+        string full_name
+        string relationship
+        string phone
+        string email
+        string address
+        string occupation
+    }
+
+    SPONSOR {
+        uuid sponsor_id PK
+        uuid applicant_id FK
+        string full_name
+        string relationship
+        string phone
+        string occupation
+        string address
+    }
+
+    JAMB_DETAIL {
+        uuid jamb_id PK
+        uuid applicant_id FK
+        string jamb_reg_number
+        int jamb_score
+        int utme_year
+        string subject_1
+        int score_1
+        string subject_2
+        int score_2
+        string subject_3
+        int score_3
+        string subject_4
+        int score_4
+        string first_choice_institution
+        string jamb_course
+    }
+
+    OLEVEL_RESULT {
+        uuid olevel_result_id PK
+        uuid applicant_id FK
+        string exam_body
+        string exam_number
+        int exam_year
+        int sitting_number
+        string certificate_url
+    }
+
+    OLEVEL_SUBJECT {
+        uuid olevel_subject_id PK
+        uuid olevel_result_id FK
+        string subject_name
+        string grade
+    }
+
+    OTHER_QUALIFICATION {
+        uuid qualification_id PK
+        uuid applicant_id FK
+        string institution_name
+        string qualification_type
+        string course_of_study
+        decimal cgpa
+        string class_of_degree
+        int graduation_year
+        string transcript_url
+    }
+
+    FACULTY {
+        uuid faculty_id PK
+        string faculty_name
+    }
+
+    DEPARTMENT {
+        uuid department_id PK
+        uuid faculty_id FK
+        string department_name
+    }
+
+    PROGRAMME_CHOICE {
+        uuid choice_id PK
+        uuid applicant_id FK
+        uuid department_id FK
+        string programme_first_choice
+        string programme_second_choice
+        string mode_of_entry
+        string mode_of_study
+        string entry_level
+        string campus
+    }
+
+    DOCUMENT {
+        uuid document_id PK
+        uuid applicant_id FK
+        string document_type
+        string file_url
+        datetime uploaded_at
+        string verification_status
+    }
+
+    PAYMENT {
+        uuid payment_id PK
+        uuid applicant_id FK
+        decimal amount
+        string rrr_reference
+        string status
+        date payment_date
+        string channel
+        string receipt_url
+    }
+
+    DECLARATION {
+        uuid declaration_id PK
+        uuid applicant_id FK
+        boolean consent_given
+        string signature_url
+        date declared_at
+    }
+
+    STAFF {
+        uuid staff_id PK
+        string full_name
+        string role
+        string email
+    }
+
+    APPLICATION_STATUS {
+        uuid status_id PK
+        uuid applicant_id FK
+        uuid staff_id FK
+        string status
+        int screening_score
+        decimal aggregate_score
+        string reviewer_comments
+        date decision_date
+        string application_ref_number
+    }

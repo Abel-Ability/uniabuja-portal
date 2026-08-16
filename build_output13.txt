@@ -1,0 +1,35 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 24ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 error:
+./src/app/portal/student/view-registration/page.tsx:10:14
+Error: You are attempting to export "metadata" from a component marked with "use client", which is disallowed. "metadata" must be resolved on the server before the page component is rendered. Keep your page as a Server Component and move Client Component logic to a separate file. Read more: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#why-generatemetadata-is-server-component-only
+  [90m 8 |[0m [36mimport[0m { [33mCURRENT_SESSION[0m } [36mfrom[0m [32m"@/lib/constants"[0m;
+  [90m 9 |[0m
+[31m[1m>[0m [90m10 |[0m [36mexport[0m [36mconst[0m metadata: [33mMetadata[0m = { title: [32m"View Registration"[0m };
+  [90m   |[0m              [31m[1m^^^^^^^^[0m
+  [90m11 |[0m
+  [90m12 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mViewRegistrationPage[0m() {
+  [90m13 |[0m   [36mconst[0m session = requireSession();
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portal/student/view-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/view-registration/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portal/student/view-registration/page.tsx [Client Component SSR]
+    ./src/app/portal/student/view-registration/page.tsx [Server Component]
+
+
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:10:14)

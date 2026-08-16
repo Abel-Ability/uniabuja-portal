@@ -1,0 +1,60 @@
+
+> uniabuja-portal@0.1.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.10 C:/Users/Osagie/Desktop/Website Project/uniabuja-portal
+
+ Γ¥» src/lib/audit.test.ts (2 tests | 2 failed) 7049ms
+     ├ù appends hash-linked records that verify intact 4170ms
+     ├ù detects tampering of a logged record 2877ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 2 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/lib/audit.test.ts > audit chain > appends hash-linked records that verify intact
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ Γ¥» src/lib/audit.test.ts:23:27
+     21|
+     22|     const result = await verifyChain();
+     23|     expect(result.intact).toBe(true);
+       |                           ^
+     24|     expect(result.count).toBeGreaterThan(0);
+     25|   });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/2]ΓÄ»
+
+ FAIL  src/lib/audit.test.ts > audit chain > detects tampering of a logged record
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ Γ¥» src/lib/audit.test.ts:59:29
+     57|
+     58|     const restored = await verifyChain();
+     59|     expect(restored.intact).toBe(true);
+       |                             ^
+     60|   }, 15_000);
+     61| });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/2]ΓÄ»
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  2 failed | 171 passed (173)
+   Start at  12:48:12
+   Duration  110.68s (transform 732ms, setup 0ms, import 1.72s, tests 106.73s, environment 664ms)
+

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Application Module — Form Wireframe</title>
+<style>
+  :root{
+    --navy:#0F2A43;
+    --navy-2:#173C5E;
+    --paper:#F6F5F1;
+    --line:#C9C2B4;
+    --ink:#1B1B1B;
+    --muted:#6B6558;
+    --accent:#B8860B;
+    --ok:#2E5E3E;
+    --field-bg:#FFFFFF;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Georgia', 'Times New Roman', serif;
+  }
+  .utility{font-family:'Courier New', monospace; letter-spacing:.04em;}
+
+  .topbar{
+    background:var(--navy);
+    color:#fff;
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:3px solid var(--accent);
+  }
+  .topbar .crest{
+    width:34px;height:34px;border:2px solid var(--accent);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;
+  }
+  .topbar .titleblock{display:flex;gap:12px;align-items:center;}
+  .topbar h1{font-size:15px;margin:0;font-weight:normal;letter-spacing:.03em;}
+  .topbar .session{font-size:11px;opacity:.75;font-family:'Courier New',monospace;}
+
+  .wrap{max-width:920px;margin:0 auto;padding:28px 24px 80px;}
+
+  .stepper{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:30px;
+    counter-reset:step;
+    border-bottom:1px solid var(--line);
+    padding-bottom:0;
+  }
+  .step{
+    flex:1;text-align:center;position:relative;padding-bottom:14px;font-family:'Courier New',monospace;font-size:11px;color:var(--muted);
+  }
+  .step .num{
+    width:24px;height:24px;border-radius:50%;border:1px solid var(--muted);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 6px;
+    font-size:11px;background:var(--paper);
+  }
+  .step.active .num{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .step.done .num{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .step.active{color:var(--navy);font-weight:bold;}
+  .step::after{
+    content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:transparent;
+  }
+  .step.active::after{background:var(--navy);}
+  .step.done::after{background:var(--ok);}
+
+  .panel{
+    background:var(--field-bg);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+  }
+  .panel-head{
+    padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .panel-head h2{font-size:18px;margin:0;}
+  .panel-head .req-note{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;}
+  .panel-body{padding:22px;}
+
+  .section-label{
+    font-family:'Courier New',monospace;font-size:11px;letter-spacing:.08em;
+    color:var(--accent);text-transform:uppercase;margin:22px 0 10px;
+    border-top:1px dashed var(--line);padding-top:16px;
+  }
+  .section-label:first-child{border-top:none;padding-top:0;margin-top:0;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid.g3{grid-template-columns:1fr 1fr 1fr;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:12.5px;color:var(--ink);}
+  label .opt{color:var(--muted);font-weight:normal;}
+  label .star{color:#8B2E2E;}
+  input, select{
+    border:1px solid var(--line);
+    background:#FEFEFC;
+    padding:9px 10px;
+    font-size:13px;
+    font-family:'Courier New', monospace;
+    border-radius:var(--radius);
+    color:var(--ink);
+  }
+  input:focus, select:focus{
+    outline:2px solid var(--navy-2);outline-offset:1px;
+  }
+  .hint{font-size:11px;color:var(--muted);}
+
+  .upload-box{
+    border:1px dashed var(--line);
+    padding:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12.5px;
+    background:#FCFBF8;
+  }
+  .upload-box .btn-small{
+    font-family:'Courier New',monospace;font-size:11px;
+    border:1px solid var(--navy);color:var(--navy);
+    padding:6px 10px;background:transparent;cursor:pointer;
+  }
+
+  .subject-row{
+    display:grid;grid-template-columns:2fr 1fr 32px;gap:10px;align-items:center;margin-bottom:8px;
+  }
+  .subject-row .rm{color:var(--muted);font-family:'Courier New',monospace;font-size:14px;text-align:center;}
+  .add-row{
+    font-family:'Courier New',monospace;font-size:11px;color:var(--navy);
+    background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;
+  }
+
+  .footer-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 22px;border-top:1px solid var(--line);
+  }
+  .btn{
+    font-family:'Courier New',monospace;font-size:12px;letter-spacing:.04em;
+    padding:11px 20px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;
+  }
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .save-note{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;}
+
+  .legend{
+    margin-top:14px;font-size:11px;color:var(--muted);font-family:'Courier New',monospace;
+    display:flex;gap:18px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="titleblock">
+      <div class="crest">UN</div>
+      <div>
+        <h1>Federal University Portal — Undergraduate Application</h1>
+        <div class="session">SESSION 2026/2027 · REF: APP/2026/00184213</div>
+      </div>
+    </div>
+    <div class="session">Applicant: ADEYEMI, J. ·  Draft saved 2 min ago</div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="stepper">
+      <div class="step done"><div class="num">✓</div>Bio-data</div>
+      <div class="step done"><div class="num">✓</div>Next of Kin</div>
+      <div class="step active"><div class="num">3</div>JAMB / O'Level</div>
+      <div class="step"><div class="num">4</div>Programme</div>
+      <div class="step"><div class="num">5</div>Documents</div>
+      <div class="step"><div class="num">6</div>Payment</div>
+      <div class="step"><div class="num">7</div>Review &amp; Submit</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Step 3 — JAMB &amp; O'Level Qualification</h2>
+        <div class="req-note"><span style="color:#8B2E2E">*</span> required field</div>
+      </div>
+
+      <div class="panel-body">
+
+        <div class="section-label">JAMB / UTME Details</div>
+        <div class="grid">
+          <div class="field">
+            <label>JAMB Registration Number <span class="star">*</span></label>
+            <input type="text" placeholder="e.g. 12345678AB" maxlength="10">
+          </div>
+          <div class="field">
+            <label>JAMB Score <span class="star">*</span></label>
+            <input type="number" placeholder="0 – 400" min="0" max="400">
+          </div>
+          <div class="field">
+            <label>UTME Year <span class="star">*</span></label>
+            <input type="number" placeholder="2026">
+          </div>
+          <div class="field">
+            <label>Course as registered on JAMB <span class="star">*</span></label>
+            <input type="text" placeholder="e.g. Computer Science">
+          </div>
+        </div>
+
+        <div class="hint" style="margin-top:14px;">JAMB subjects &amp; scores (4 required)</div>
+        <div class="grid g3" style="margin-top:8px;">
+          <div class="field"><label>Subject 1 <span class="star">*</span></label><input type="text" placeholder="English Language"></div>
+          <div class="field"><label>Score <span class="star">*</span></label><input type="number" placeholder="0–100"></div>
+          <div></div>
+          <div class="field"><label>Subject 2 <span class="star">*</span></label><input type="text" placeholder="Mathematics"></div>
+          <div class="field"><label>Score <span class="star">*</span></label><input type="number" placeholder="0–100"></div>
+          <div></div>
+          <div class="field"><label>Subject 3 <span class="star">*</span></label><input type="text" placeholder="Physics"></div>
+          <div class="field"><label>Score <span class="star">*</span></label><input type="number" placeholder="0–100"></div>
+          <div></div>
+          <div class="field"><label>Subject 4 <span class="star">*</span></label><input type="text" placeholder="Chemistry"></div>
+          <div class="field"><label>Score <span class="star">*</span></label><input type="number" placeholder="0–100"></div>
+          <div></div>
+        </div>
+
+        <div class="section-label">O'Level Qualification — Sitting 1</div>
+        <div class="grid">
+          <div class="field">
+            <label>Examination Body <span class="star">*</span></label>
+            <select><option>WAEC</option><option>NECO</option><option>NABTEB</option><option>GCE</option></select>
+          </div>
+          <div class="field">
+            <label>Examination Number <span class="star">*</span></label>
+            <input type="text" placeholder="e.g. 4123456789">
+          </div>
+          <div class="field">
+            <label>Examination Year <span class="star">*</span></label>
+            <input type="number" placeholder="2023">
+          </div>
+          <div class="field">
+            <label>Result upload <span class="star">*</span></label>
+            <input type="text" placeholder="result_slip.pdf" disabled>
+          </div>
+        </div>
+
+        <div class="hint" style="margin-top:14px;">Subjects &amp; grades — minimum 5, including English &amp; Mathematics</div>
+        <div style="margin-top:8px;">
+          <div class="subject-row">
+            <input type="text" placeholder="English Language">
+            <select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option><option>C6</option></select>
+            <div class="rm">✕</div>
+          </div>
+          <div class="subject-row">
+            <input type="text" placeholder="Mathematics">
+            <select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option><option>C6</option></select>
+            <div class="rm">✕</div>
+          </div>
+          <div class="subject-row">
+            <input type="text" placeholder="Subject 3">
+            <select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option><option>C6</option></select>
+            <div class="rm">✕</div>
+          </div>
+          <button class="add-row">+ add subject</button>
+        </div>
+
+        <div class="upload-box" style="margin-top:20px;">
+          <span>Do you have a second sitting? Attach another O'Level result set.</span>
+          <button class="btn-small">+ ADD SITTING 2</button>
+        </div>
+
+      </div>
+
+      <div class="footer-bar">
+        <button class="btn btn-ghost">← Back: Next of Kin</button>
+        <div class="save-note">Draft auto-saves every 60s</div>
+        <button class="btn btn-primary">Save &amp; Continue: Programme →</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><span class="star">*</span> = required</span>
+      <span>Step 3 of 7</span>
+      <span>Est. time remaining: 6 min</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

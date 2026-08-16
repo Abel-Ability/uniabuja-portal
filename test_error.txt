@@ -1,0 +1,7 @@
+At line:1 char:62
++ ...  'C:\Users\Osagie\Desktop\Website Project\uniabuja-portal' && npx vit ...
++                                                                ~~
+The token '&&' is not a valid statement separator in this version.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidEndOfLine
+ 

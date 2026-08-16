@@ -1,0 +1,81 @@
+{
+  "aliases": [
+    {
+      "alias": "uniabuja-portal-abelosagie-7097-cbs4.vercel.app",
+      "deploymentId": "dpl_jBwmFMoG8X86gTMqJ2Yb2SQhB4CF",
+      "url": "uniabuja-portal-kohjkcu9f-cbs4.vercel.app",
+      "createdAt": 1786237542954
+    },
+    {
+      "alias": "uniabuja-portal-cbs4.vercel.app",
+      "deploymentId": "dpl_jBwmFMoG8X86gTMqJ2Yb2SQhB4CF",
+      "url": "uniabuja-portal-kohjkcu9f-cbs4.vercel.app",
+      "createdAt": 1786235896823
+    },
+    {
+      "alias": "uniabuja-portal-rho.vercel.app",
+      "deploymentId": "dpl_jBwmFMoG8X86gTMqJ2Yb2SQhB4CF",
+      "url": "uniabuja-portal-kohjkcu9f-cbs4.vercel.app",
+      "createdAt": 1786235896822
+    },
+    {
+      "alias": "uniabuja-portal-git-main-cbs4.vercel.app",
+      "deploymentId": "dpl_87KQhz2SdeBRg3esK36k3ZSoZEMo",
+      "url": "uniabuja-portal-2ngdhuqg5-cbs4.vercel.app",
+      "createdAt": 1786235668792
+    },
+    {
+      "alias": "tassnigeria2026-abelosagie-7097-cbs4.vercel.app",
+      "deploymentId": "dpl_BPtTqDwYYfxG9wa5bV6qenR8JmS9",
+      "url": "tassnigeria2026-dvbhy8hh3-cbs4.vercel.app",
+      "createdAt": 1783113250621
+    },
+    {
+      "alias": "tasscemri.org",
+      "deploymentId": "dpl_BPtTqDwYYfxG9wa5bV6qenR8JmS9",
+      "url": "tassnigeria2026-dvbhy8hh3-cbs4.vercel.app",
+      "createdAt": 1783082655714
+    },
+    {
+      "alias": "tassnigeria2026-cbs4.vercel.app",
+      "deploymentId": "dpl_BPtTqDwYYfxG9wa5bV6qenR8JmS9",
+      "url": "tassnigeria2026-dvbhy8hh3-cbs4.vercel.app",
+      "createdAt": 1783001533525
+    },
+    {
+      "alias": "tassnigeria2026.vercel.app",
+      "deploymentId": "dpl_BPtTqDwYYfxG9wa5bV6qenR8JmS9",
+      "url": "tassnigeria2026-dvbhy8hh3-cbs4.vercel.app",
+      "createdAt": 1783001533525
+    },
+    {
+      "alias": "tassnigeria2026-git-main-cbs4.vercel.app",
+      "deploymentId": "dpl_F5D1L2vWnQpoLzgBf1WuJVqb82Pg",
+      "url": "tassnigeria2026-ies53ruv5-cbs4.vercel.app",
+      "createdAt": 1783001499134
+    },
+    {
+      "alias": "abel-osagie.vercel.app",
+      "deploymentId": "dpl_AA9Y6VYyFoqwXkG2439jLMK3eAKn",
+      "url": "abel-osagie-1heiracgs-cbs4.vercel.app",
+      "createdAt": 1782607734235
+    },
+    {
+      "alias": "abel-osagie-cbs4.vercel.app",
+      "deploymentId": "dpl_AA9Y6VYyFoqwXkG2439jLMK3eAKn",
+      "url": "abel-osagie-1heiracgs-cbs4.vercel.app",
+      "createdAt": 1782465905256
+    },
+    {
+      "alias": "abel-osagie-git-main-cbs4.vercel.app",
+      "deploymentId": "dpl_AA9Y6VYyFoqwXkG2439jLMK3eAKn",
+      "url": "abel-osagie-1heiracgs-cbs4.vercel.app",
+      "createdAt": 1782465883045
+    }
+  ],
+  "pagination": {
+    "count": 12,
+    "next": null,
+    "prev": 1786237542954
+  }
+}

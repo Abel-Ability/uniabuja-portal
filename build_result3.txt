@@ -1,0 +1,16 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1894ms
+  Running TypeScript ...
+src/app/portal/hod/course-offerings/OfferingCreationForm.tsx(186,13): error TS1109: Expression expected.
+src/app/portal/hod/course-offerings/OfferingCreationForm.tsx(204,13): error TS1109: Expression expected.
+src/app/portal/hod/course-offerings/OfferingCreationForm.tsx(214,13): error TS1109: Expression expected.
+Failed to type check.
+

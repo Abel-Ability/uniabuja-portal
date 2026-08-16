@@ -1,0 +1,182 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+Γ£ô Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 11 errors:
+./src/app/portal/student/courses/page.tsx:114:18
+Error: Expected '</', got 'ident'
+  112 |             </Table>
+  113 |
+> 114 |             <div className="mt-4">
+      |                  ^^^^^^^^^
+  115 |               <p className="text-sm text-slate-500">
+  116 |                 Total Credit Units: {totalRegisteredUnits}
+  117 |               </p>
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/view-registration/page.tsx:203:20
+Error: Expected '</', got 'ident'
+  201 |               </Table>
+  202 |
+> 203 |               <div className="mt-3">
+      |                    ^^^^^^^^^
+  204 |                 <p className="text-sm text-slate-500">Total Credit Units: {registration.t...
+  205 |               </div>
+  206 |             )}
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/course-registration/page.tsx:3:10
+Error: You're importing a module that depends on `useActionState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 | import type { Metadata } from "next";
+  2 | import { useState, useEffect } from "react";
+> 3 | import { useActionState } from "react";
+    |          ^^^^^^^^^^^^^^
+  4 | import {
+  5 |   ChevronDown,
+  6 |   CheckCircle,
+
+Ecmascript file had an error
+
+
+./src/app/portal/student/academic-progress/page.tsx:2:10
+Error: You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 | import type { Metadata } from "next";
+> 2 | import { useEffect, useState } from "react";
+    |          ^^^^^^^^^
+  3 | import { Card, PageHeader, StatChart, Table } from "@/components/ui";
+  4 | import { requireSession } from "@/lib/session";
+  5 | import { prisma } from "@/lib/prisma";
+
+Ecmascript file had an error
+
+
+./src/app/portal/student/course-registration/page.tsx:2:20
+Error: You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 | import type { Metadata } from "next";
+> 2 | import { useState, useEffect } from "react";
+    |                    ^^^^^^^^^
+  3 | import { useActionState } from "react";
+  4 | import {
+  5 |   ChevronDown,
+
+Ecmascript file had an error
+
+
+./src/app/portal/student/academic-progress/page.tsx:2:21
+Error: You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 | import type { Metadata } from "next";
+> 2 | import { useEffect, useState } from "react";
+    |                     ^^^^^^^^
+  3 | import { Card, PageHeader, StatChart, Table } from "@/components/ui";
+  4 | import { requireSession } from "@/lib/session";
+  5 | import { prisma } from "@/lib/prisma";
+
+Ecmascript file had an error
+
+
+./src/app/portal/student/course-registration/page.tsx:2:10
+Error: You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 | import type { Metadata } from "next";
+> 2 | import { useState, useEffect } from "react";
+    |          ^^^^^^^^
+  3 | import { useActionState } from "react";
+  4 | import {
+  5 |   ChevronDown,
+
+Ecmascript file had an error
+
+
+./src/lib/module-actions.ts:1532:32
+Error: Module not found: Can't resolve '../../lib/constants'
+  1530 |     const yy = parseInt(user.registrationNo.match(/^(\d{2})/)?.[1] ?? "00", 10);
+  1531 |     const admissionYear = yy <= 50 ? 2000 + yy : 1900 + yy;
+> 1532 |     const currentSessionYear = require("../../lib/constants").CURRENT_SESSION_START_YEAR;
+       |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  1533 |     level = Math.max(100, (currentSessionYear - admissionYear + 1) * 100);
+  1534 |   }
+  1535 |
+
+
+
+Import trace:
+  Server Component:
+    ./src/lib/module-actions.ts
+    ./src/app/portal/student/course-registration/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/app/portal/student/course-registration/page.tsx:21:1
+Error: Module not found: Can't resolve 'uuid'
+  19 | import { CURRENT_SESSION } from "@/lib/constants";
+  20 | import { registerCourse } from "@/lib/module-actions";
+> 21 | import { v4 as generateId } from "uuid";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  22 |
+  23 | export const metadata: Metadata = { title: "Course Registration" };
+  24 |
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/app/portal/student/course-registration/page.tsx:15:1
+Error: Export Select doesn't exist in target module
+  13 |   Shield,
+  14 | } from "lucide-react";
+> 15 | import { Card, PageHeader, StatCard, PillButton, Select, Input } from "@/components/ui";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  16 | import { requireSession } from "@/lib/session";
+  17 | import { prisma } from "@/lib/prisma";
+  18 | import { getCoursesUG } from "@/lib/sheets";
+
+The export Select was not found in module [project]/src/components/ui.tsx [app-rsc] (ecmascript).
+Did you mean to import SectionHeading?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./src/app/portal/student/page.tsx:16:1
+Error: Export getCurrentSession doesn't exist in target module
+  14 | import { Card, PageHeader, StatCard, Badge } from "@/components/ui";
+  15 | import { requireSession } from "@/lib/session";
+> 16 | import { getCurrentSession } from "@/lib/constants";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  17 | import { getCoursesUG } from "@/lib/sheets";
+  18 | import { computeStudentStats } from "@/lib/student-stats";
+  19 | import { formatCurrency } from "@/lib/utils";
+
+The export getCurrentSession was not found in module [project]/src/lib/constants.ts [app-rsc] (ecmascript).
+Did you mean to import departmentLevels?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+    at <unknown> (./src/app/portal/student/courses/page.tsx:114:18)
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:203:20)
+    at <unknown> (./src/app/portal/student/course-registration/page.tsx:3:10)
+    at <unknown> (./src/app/portal/student/academic-progress/page.tsx:2:10)
+    at <unknown> (./src/app/portal/student/course-registration/page.tsx:2:20)
+    at <unknown> (./src/app/portal/student/academic-progress/page.tsx:2:21)
+    at <unknown> (./src/app/portal/student/course-registration/page.tsx:2:10)
+    at <unknown> (./src/lib/module-actions.ts:1532:32)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/app/portal/student/course-registration/page.tsx:21:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/app/portal/student/course-registration/page.tsx:15:1)
+    at <unknown> (./src/app/portal/student/page.tsx:16:1)

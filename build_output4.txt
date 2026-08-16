@@ -1,0 +1,320 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 28ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 10 errors:
+./src/app/portal/student/courses/page.tsx:116:18
+Error: Expected '</', got 'ident'
+  [90m114 |[0m             </[33mTable[0m>
+  [90m115 |[0m
+[31m[1m>[0m [90m116 |[0m             <div style={{ marginTop: [35m1[0m }}>
+  [90m    |[0m                  [31m[1m^^^^^[0m
+  [90m117 |[0m               <p className=[32m"text-sm text-slate-500"[0m>
+  [90m118 |[0m                 [33mTotal[0m [33mCredit[0m [33mUnits[0m: {totalRegisteredUnits}
+  [90m119 |[0m               </p>
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/view-registration/page.tsx:205:20
+Error: Expected '</', got 'ident'
+  [90m203 |[0m               </[33mTable[0m>
+  [90m204 |[0m
+[31m[1m>[0m [90m205 |[0m               <div style={{ marginTop: [35m1[0m }}>
+  [90m    |[0m                    [31m[1m^^^^^[0m
+  [90m206 |[0m                 <p className=[32m"text-sm text-slate-500"[0m>[33mTotal[0m [33mCredit[0m [33mUnits[0m: {registration.t...
+  [90m207 |[0m               </div>
+  [90m208 |[0m             )}
+
+Parsing ecmascript source code failed
+
+
+./src/app/portal/student/academic-progress/page.tsx:12:14
+Error: You are attempting to export "metadata" from a component marked with "use client", which is disallowed. "metadata" must be resolved on the server before the page component is rendered. Keep your page as a Server Component and move Client Component logic to a separate file. Read more: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#why-generatemetadata-is-server-component-only
+  [90m10 |[0m [36mimport[0m { formatNumber } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m11 |[0m
+[31m[1m>[0m [90m12 |[0m [36mexport[0m [36mconst[0m metadata: [33mMetadata[0m = { title: [32m"Academic Progress"[0m };
+  [90m   |[0m              [31m[1m^^^^^^^^[0m
+  [90m13 |[0m
+  [90m14 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mAcademicProgressPage[0m() {
+  [90m15 |[0m   [36mconst[0m session = requireSession();
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portal/student/academic-progress/page.tsx [Client Component Browser]
+    ./src/app/portal/student/academic-progress/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portal/student/academic-progress/page.tsx [Client Component SSR]
+    ./src/app/portal/student/academic-progress/page.tsx [Server Component]
+
+
+./node_modules/pg/lib/connection-parameters.js:3:13
+Error: Module not found: Can't resolve 'dns'
+  [90m1 |[0m [32m'use strict'[0m
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mconst[0m dns = require([32m'dns'[0m)
+  [90m  |[0m             [31m[1m^^^^^^^^^^^^^^[0m
+  [90m4 |[0m
+  [90m5 |[0m [36mconst[0m defaults = require([32m'./defaults'[0m)
+  [90m6 |[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg/lib/connection-parameters.js [Client Component Browser]
+    ./node_modules/pg/lib/client.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg/lib/connection-parameters.js [externals-tracing]
+    ./node_modules/pg/lib/client.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pg-connection-string/index.js:88:70
+Error: Module not found: Can't resolve 'fs'
+  [90m86 |[0m
+  [90m87 |[0m   [90m// Only try to load fs if we expect to read from the disk[0m
+[31m[1m>[0m [90m88 |[0m   [36mconst[0m fs = config.sslcert || config.sslkey || config.sslrootcert ? require([32m'fs'[0m) : [36mnull[0m
+  [90m   |[0m                                                                      [31m[1m^^^^^^^^^^^^^[0m
+  [90m89 |[0m
+  [90m90 |[0m   [36mif[0m (config.sslcert) {
+  [90m91 |[0m     config.ssl.cert = fs.readFileSync(config.sslcert).toString()
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg-connection-string/index.js [Client Component Browser]
+    ./node_modules/pg/lib/connection-parameters.js [Client Component Browser]
+    ./node_modules/pg/lib/client.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg-connection-string/index.js [externals-tracing]
+    ./node_modules/pg/lib/connection-parameters.js [externals-tracing]
+    ./node_modules/pg/lib/client.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pgpass/lib/index.js:4:10
+Error: Module not found: Can't resolve 'fs'
+  [90m2 |[0m
+  [90m3 |[0m [36mvar[0m path = require([32m'path'[0m)
+[31m[1m>[0m [90m4 |[0m   , fs = require([32m'fs'[0m)
+  [90m  |[0m          [31m[1m^^^^^^^^^^^^^[0m
+  [90m5 |[0m   , helper = require([32m'./helper.js'[0m)
+  [90m6 |[0m ;
+  [90m7 |[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pgpass/lib/index.js [Client Component Browser]
+    ./node_modules/pg/lib/client.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pgpass/lib/index.js [externals-tracing]
+    ./node_modules/pg/lib/client.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pg/lib/connection.js:116:17
+Error: Module not found: Can't resolve 'net'
+  [90m114 |[0m     }
+  [90m115 |[0m
+[31m[1m>[0m [90m116 |[0m     [36mconst[0m net = require([32m'net'[0m)
+  [90m    |[0m                 [31m[1m^^^^^^^^^^^^^^[0m
+  [90m117 |[0m     [36mif[0m (net.isIP && net.isIP(host) === [35m0[0m) {
+  [90m118 |[0m       options.servername = host
+  [90m119 |[0m     }
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg/lib/connection.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg/lib/connection.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pg/lib/stream.js:22:17
+Error: Module not found: Can't resolve 'net'
+  [90m20 |[0m [36mfunction[0m getNodejsStreamFuncs() {
+  [90m21 |[0m   [36mfunction[0m getStream(ssl) {
+[31m[1m>[0m [90m22 |[0m     [36mconst[0m net = require([32m'net'[0m)
+  [90m   |[0m                 [31m[1m^^^^^^^^^^^^^^[0m
+  [90m23 |[0m     [36mreturn[0m [36mnew[0m net.[33mSocket[0m()
+  [90m24 |[0m   }
+  [90m25 |[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg/lib/stream.js [Client Component Browser]
+    ./node_modules/pg/lib/connection.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg/lib/stream.js [externals-tracing]
+    ./node_modules/pg/lib/connection.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pg/lib/stream.js:27:17
+Error: Module not found: Can't resolve 'tls'
+  [90m25 |[0m
+  [90m26 |[0m   [36mfunction[0m getSecureStream(options) {
+[31m[1m>[0m [90m27 |[0m     [36mconst[0m tls = require([32m'tls'[0m)
+  [90m   |[0m                 [31m[1m^^^^^^^^^^^^^^[0m
+  [90m28 |[0m     [36mreturn[0m tls.connect(options)
+  [90m29 |[0m   }
+  [90m30 |[0m   [36mreturn[0m {
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg/lib/stream.js [Client Component Browser]
+    ./node_modules/pg/lib/connection.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg/lib/stream.js [externals-tracing]
+    ./node_modules/pg/lib/connection.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./node_modules/pg/lib/utils.js:5:20
+Error: Module not found: Can't resolve 'util/types'
+  [90m3 |[0m [36mconst[0m defaults = require([32m'./defaults'[0m)
+  [90m4 |[0m
+[31m[1m>[0m [90m5 |[0m [36mconst[0m { isDate } = require([32m'util/types'[0m)
+  [90m  |[0m                    [31m[1m^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m
+  [90m7 |[0m [36mfunction[0m escapeElement(elementRepresentation) {
+  [90m8 |[0m   [36mconst[0m escaped = elementRepresentation.replace([35m/\\/g[0m, [32m'\\\\'[0m).replace([35m/"/g[0m, [32m'\\"'[0m)
+
+
+
+Import traces:
+  Client Component Browser:
+    ./node_modules/pg/lib/utils.js [Client Component Browser]
+    ./node_modules/pg/lib/index.js [Client Component Browser]
+    ./node_modules/pg/esm/index.mjs [Client Component Browser]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [Client Component Browser]
+    ./src/lib/prisma.ts [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Client Component Browser]
+    ./src/app/portal/student/course-registration/page.tsx [Server Component]
+
+  externals-tracing:
+    ./node_modules/pg/lib/utils.js [externals-tracing]
+    ./node_modules/pg/lib/index.js [externals-tracing]
+    ./node_modules/pg/esm/index.mjs [externals-tracing]
+    [externals]/pg [external]
+    ./node_modules/@prisma/adapter-pg/dist/index.mjs [App Route]
+    ./src/lib/prisma.ts [App Route]
+    ./src/app/api/v1/verify/result/route.ts [App Route]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/app/portal/student/courses/page.tsx:116:18)
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:205:20)
+    at <unknown> (./src/app/portal/student/academic-progress/page.tsx:12:14)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)

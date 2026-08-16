@@ -1,0 +1,26 @@
+
+> uniabuja-portal@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 23ms
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 error:
+./src/app/portal/student/view-registration/page.tsx:205:26
+Error: Expected '</', got 'ident'
+  [90m203 |[0m               </[33mTable[0m>
+  [90m204 |[0m
+[31m[1m>[0m [90m205 |[0m               <div>[33mTotal[0m [33mCredit[0m [33mUnits[0m: {registration.totalUnits}</div>
+  [90m    |[0m                          [31m[1m^^^^^^[0m
+  [90m206 |[0m             )}
+  [90m207 |[0m           </div>
+  [90m208 |[0m         </[33mCard[0m>
+
+Parsing ecmascript source code failed
+
+
+    at <unknown> (./src/app/portal/student/view-registration/page.tsx:205:26)
