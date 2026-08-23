@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Users } from "lucide-react";
 import { Card, PageHeader, StatCard, Badge } from "@/components/ui";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS, departmentMaxLevel, studentLevel } from "@/lib/constants";
+import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS, departmentMaxLevel, landingForRole, studentLevel } from "@/lib/constants";
 import { getRegistrationForView, isRegistrationFinalised } from "@/lib/student-finalisation";
 import { getSheetAnnouncements } from "@/lib/sheets";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = { title: "Student Dashboard" };
 
 export default async function StudentDashboard() {
   const session = await requireSession();
+  if (session.user.role !== "STUDENT") redirect(landingForRole(session.user.role));
   const { user } = session;
 
   const sessionKey = CURRENT_SESSION;

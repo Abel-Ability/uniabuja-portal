@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { generateCaptcha } from "@/lib/captcha";
-import { getAcademicUnits } from "@/lib/sheets";
 import { PageHeader, Card } from "@/components/ui";
-import { ApplyForm, type DepartmentOption } from "./apply-form";
-
-export const dynamic = "force-dynamic";
+import { ApplicationEmbed } from "@/components/application-embed";
 
 export const metadata: Metadata = { title: "Apply · Admissions" };
 
@@ -16,19 +12,7 @@ const NEXT_STEPS = [
   { title: "Offer & acceptance", body: "If admitted, you accept your offer and pay acceptance fees." },
 ];
 
-export default async function ApplyPage() {
-  const academicUnits = await getAcademicUnits().catch(() => null);
-  const departments: DepartmentOption[] = (academicUnits?.faculties ?? []).flatMap(
-    (faculty) =>
-      faculty.departments.map((name) => ({
-        id: name,
-        name,
-        faculty: faculty.college ? `${faculty.name} · ${faculty.college}` : faculty.name,
-      })),
-  );
-
-  const challenge = generateCaptcha();
-
+export default function ApplyPage() {
   return (
     <div className="bg-white dark:bg-slate-900">
       <PageHeader
@@ -39,7 +23,7 @@ export default async function ApplyPage() {
       <div className="mx-auto max-w-6xl space-y-10 px-4 py-12 sm:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <ApplyForm departments={departments} challenge={challenge} />
+            <ApplicationEmbed />
           </div>
 
           <aside className="space-y-4" aria-label="What happens next">

@@ -788,61 +788,8 @@ export async function addVisitationReport(
 }
 
 // ---------------------------------------------------------------------------
-// Admissions (applications)
+// Admissions (documents)
 // ---------------------------------------------------------------------------
-
-export async function submitApplication(
-  _prev: ModuleActionResult | null,
-  formData: FormData,
-): Promise<ModuleActionResult> {
-  const session = await getCurrentSession();
-  if (!session) redirect("/login");
-  if (session.user.role !== "APPLICANT") {
-    return { error: "Only applicants can submit applications." };
-  }
-
-  const active = await prisma.application.findFirst({
-    where: { userId: session.userId, status: { in: ["DRAFT", "SUBMITTED", "SCREENING", "PENDING_CAPS"] } },
-  });
-  if (active) return { error: "You already have an application in progress." };
-
-  const programmeId = String(formData.get("programmeId") ?? "");
-  const programme = await prisma.programme.findUnique({ where: { id: programmeId } });
-  if (!programme) return { error: "Select a programme." };
-
-  const jambNo = String(formData.get("jambNo") ?? "").trim() || session.user.jambNo || null;
-  const eligibility = {
-    totalScore: 287,
-    utme: 242,
-    oLevel: "8 points",
-    eligible: true,
-  };
-
-  const app = await prisma.application.create({
-    data: {
-      userId: session.userId,
-      programmeId: programme.id,
-      jambNo,
-      status: "SUBMITTED",
-      eligibility,
-      nipedsStatus: "UNVERIFIED",
-      submittedAt: new Date(),
-    },
-  });
-  await writeAudit({
-    action: "SUBMIT",
-    module: "ADMISSIONS",
-    targetType: "APPLICATION",
-    targetId: app.id,
-    meta: metaFromHeaders(await headers()),
-    actorUserId: session.userId,
-    actorUsername: session.user.username,
-    actorRole: session.user.role,
-    sessionId: session.id,
-    after: { programmeId: programme.code, eligibility },
-  });
-  return { ok: true };
-}
 
 export async function uploadDocument(
   _prev: ModuleActionResult | null,
@@ -3240,6 +3187,364 @@ export async function rejectScholarship(
     approvedById: session.userId,
     decisionNote: decisionNote || null,
   });
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Admission Committee: selection, chairman review, and confirmation
+// ---------------------------------------------------------------------------
+
+// Reuses SessionLike from above (line ~374) which includes user.role
+// Extended helper for committee actions that need userId
+
+type CommitteeSession = { id: string; userId: string; user: { role: string; username: string } };
+
+function isValidTransition(current: string, target: string): boolean {
+  const transitions: Record<string, string[]> = {
+    SUBMITTED: ["SHORTLISTED", "REJECTED", "WITHDRAWN"],
+    SHORTLISTED: ["SELECTED", "REJECTED", "WITHDRAWN"],
+    SELECTED: ["CHAIRMAN_REVIEW", "SHORTLISTED"],
+    CHAIRMAN_REVIEW: ["ADMITTED", "NOT_ADMITTED", "RETURNED"],
+    RETURNED: ["SELECTED", "REJECTED"],
+  };
+  return transitions[current]?.includes(target) ?? false;
+}
+
+async function requireCommitteeMembership(session: CommitteeSession): Promise<string | null> {
+  const membership = await prisma.committeeMembership.findFirst({
+    where: {
+      committee: "ADMISSIONS_COMMITTEE",
+      userId: session.userId,
+      status: "ACTIVE",
+    },
+  });
+  if (!membership) return "You are not an active member of the Admissions Committee.";
+  return null;
+}
+
+async function requireChairmanMembership(session: CommitteeSession): Promise<string | null> {
+  const membership = await prisma.committeeMembership.findFirst({
+    where: {
+      committee: "ADMISSIONS_COMMITTEE",
+      userId: session.userId,
+      designation: "CHAIRMAN",
+      status: "ACTIVE",
+    },
+  });
+  if (!membership) return "You are not the Admissions Committee Chairman.";
+  return null;
+}
+
+export async function selectCandidate(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "W")) {
+    return { error: "Your role cannot select candidates." };
+  }
+  const membershipError = await requireCommitteeMembership(session);
+  if (membershipError) return { error: membershipError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const category = String(formData.get("category") ?? "MERIT").trim();
+  const justification = String(formData.get("justification") ?? "").trim().slice(0, 1000);
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 1000);
+
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." };
+
+  // Must be eligible to select
+  if (app.eligible === false) {
+    return { error: "Cannot select an ineligible candidate." };
+  }
+  if (app.cutoffMet === false) {
+    return { error: "Cannot select a candidate who does not meet the programme cut-off." };
+  }
+
+  // Validate state transition
+  const targetStatus = "SELECTED";
+  if (app.status === "SELECTED") {
+    return { error: "Candidate is already selected." };
+  }
+  if (!isValidTransition(app.status, targetStatus)) {
+    return { error: `Cannot select from status ${app.status}.` };
+  }
+
+  // Require justification for non-merit categories
+  const requiresJustification = category !== "MERIT";
+  if (requiresJustification && !justification) {
+    return { error: `Justification is required for ${category} category.` };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: {
+      status: targetStatus,
+      committeeSelectionUserId: session.userId,
+      committeeSelectionAt: new Date(),
+      committeeCategory: category,
+      committeeJustification: requiresJustification ? justification : null,
+      committeeNotes: notes || null,
+    },
+  });
+
+  await audit("ADMISSIONS", "UPDATE", "APPLICATION", app.id, session, {
+    status: app.status,
+    committeeSelectionUserId: app.committeeSelectionUserId,
+    committeeCategory: app.committeeCategory,
+  }, {
+    status: targetStatus,
+    committeeSelectionUserId: session.userId,
+    committeeSelectionAt: new Date().toISOString(),
+    committeeCategory: category,
+    committeeJustification: requiresJustification ? justification : null,
+  });
+
+  return { ok: true };
+}
+
+export async function deselectCandidate(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "W")) {
+    return { error: "Your role cannot deselect candidates." };
+  }
+  const membershipError = await requireCommitteeMembership(session);
+  if (membershipError) return { error: membershipError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." }
+
+  // Can only deselect SELECTED candidates back to SHORTLISTED
+  if (app.status !== "SELECTED") {
+    return { error: "Can only deselect candidates in SELECTED status." };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: {
+      status: "SHORTLISTED",
+      committeeSelectionUserId: null,
+      committeeSelectionAt: null,
+      committeeCategory: null,
+      committeeJustification: null,
+      committeeNotes: null,
+    },
+  });
+
+  await audit("ADMISSIONS", "UPDATE", "APPLICATION", app.id, session, {
+    status: "SELECTED",
+    committeeSelectionUserId: session.userId,
+    committeeCategory: app.committeeCategory,
+  }, {
+    status: "SHORTLISTED",
+    committeeSelectionUserId: null,
+  });
+
+  return { ok: true };
+}
+
+export async function submitForChairmanReview(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "W")) {
+    return { error: "Your role cannot submit for chairman review." };
+  }
+  const membershipError = await requireCommitteeMembership(session);
+  if (membershipError) return { error: membershipError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." };
+
+  if (app.status !== "SELECTED") {
+    return { error: "Can only submit SELECTED candidates for chairman review." };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: { status: "CHAIRMAN_REVIEW" },
+  });
+
+  await audit("ADMISSIONS", "UPDATE", "APPLICATION", app.id, session, {
+    status: "SELECTED",
+  }, {
+    status: "CHAIRMAN_REVIEW",
+  });
+
+  return { ok: true };
+}
+
+export async function chairmanConfirm(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "A")) {
+    return { error: "Your role cannot confirm admission." };
+  }
+  const chairmanError = await requireChairmanMembership(session);
+  if (chairmanError) return { error: chairmanError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 1000);
+
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." };
+
+  if (app.status !== "CHAIRMAN_REVIEW") {
+    return { error: "Can only confirm candidates in CHAIRMAN_REVIEW status." };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: {
+      status: "ADMITTED",
+      chairmanDecisionUserId: session.userId,
+      chairmanDecisionAt: new Date(),
+      chairmanDecision: "ADMITTED",
+      chairmanDecisionNotes: notes || null,
+    },
+  });
+
+  // Create admission offer
+  await prisma.admissionOffer.create({
+    data: { applicationId: app.id, programmeId: app.programmeId },
+  });
+
+  await audit("ADMISSIONS", "APPROVE", "APPLICATION", app.id, session, {
+    status: "CHAIRMAN_REVIEW",
+    chairmanDecision: null,
+  }, {
+    status: "ADMITTED",
+    chairmanDecisionUserId: session.userId,
+    chairmanDecision: "ADMITTED",
+    chairmanDecisionAt: new Date().toISOString(),
+  });
+
+  // Email notification would be triggered here via the notification adapter
+  // For now, record the notification intent
+  await audit("ADMISSIONS", "CREATE", "NOTIFICATION", app.id, session, undefined, {
+    type: "ADMISSION_CONFIRMED",
+    applicationId: app.id,
+    applicantEmail: app.applicantEmail,
+    status: "PENDING",
+  });
+
+  return { ok: true };
+}
+
+export async function chairmanReject(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "A")) {
+    return { error: "Your role cannot reject admission." };
+  }
+  const chairmanError = await requireChairmanMembership(session);
+  if (chairmanError) return { error: chairmanError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 1000);
+
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." };
+
+  if (app.status !== "CHAIRMAN_REVIEW") {
+    return { error: "Can only reject candidates in CHAIRMAN_REVIEW status." };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: {
+      status: "NOT_ADMITTED",
+      chairmanDecisionUserId: session.userId,
+      chairmanDecisionAt: new Date(),
+      chairmanDecision: "NOT_ADMITTED",
+      chairmanDecisionNotes: notes || null,
+    },
+  });
+
+  await audit("ADMISSIONS", "UPDATE", "APPLICATION", app.id, session, {
+    status: "CHAIRMAN_REVIEW",
+    chairmanDecision: null,
+  }, {
+    status: "NOT_ADMITTED",
+    chairmanDecisionUserId: session.userId,
+    chairmanDecision: "NOT_ADMITTED",
+    chairmanDecisionAt: new Date().toISOString(),
+  });
+
+  return { ok: true };
+}
+
+export async function chairmanReturn(
+  _prev: ModuleActionResult | null,
+  formData: FormData,
+): Promise<ModuleActionResult> {
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!can(session.user.role, "ADMISSIONS", "A")) {
+    return { error: "Your role cannot return candidates for review." };
+  }
+  const chairmanError = await requireChairmanMembership(session);
+  if (chairmanError) return { error: chairmanError };
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 1000);
+
+  if (!applicationId) return { error: "Missing application." };
+
+  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  if (!app) return { error: "Application not found." };
+
+  if (app.status !== "CHAIRMAN_REVIEW") {
+    return { error: "Can only return candidates in CHAIRMAN_REVIEW status." };
+  }
+
+  await prisma.application.update({
+    where: { id: app.id },
+    data: {
+      status: "RETURNED",
+      chairmanDecisionUserId: session.userId,
+      chairmanDecisionAt: new Date(),
+      chairmanDecision: "RETURNED",
+      chairmanDecisionNotes: notes || null,
+    },
+  });
+
+  await audit("ADMISSIONS", "UPDATE", "APPLICATION", app.id, session, {
+    status: "CHAIRMAN_REVIEW",
+    chairmanDecision: null,
+  }, {
+    status: "RETURNED",
+    chairmanDecisionUserId: session.userId,
+    chairmanDecision: "RETURNED",
+    chairmanDecisionAt: new Date().toISOString(),
+  });
+
   return { ok: true };
 }
 

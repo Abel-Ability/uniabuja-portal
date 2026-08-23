@@ -56,6 +56,7 @@ describe("post-login landing routing", () => {
       VC: "/portal/vc",
       SBC_CHAIRMAN: "/portal/sbc",
       VERIFIER: "/portal/results",
+      ADMISSION_COMMITTEE: "/portal/admissions",
     };
     for (const role of ROLES) {
       const href = landingForRole(role);
@@ -317,6 +318,7 @@ const WORKSPACE_PREFIX: Record<string, string> = {
   SBC_CHAIRMAN: "/portal/sbc",
   DVC_OVERSIGHT: "/portal/dvc",
   GOVERNANCE_OVERSIGHT_MEMBER: "/portal/dvc",
+  ADMISSION_COMMITTEE: "/portal/admissions",
 };
 
 // The shared /portal/results page renders a read-only view for roles with
@@ -325,10 +327,10 @@ const WORKSPACE_PREFIX: Record<string, string> = {
 const SHARED_RESULTS_ROLES = ["REGISTRY", "PG_SCHOOL", "TIMETABLE", "BURSARY", "STUDENT_AFFAIRS"];
 
 describe("remaining role workspace navigation recovery", () => {
-  it("keeps the nine dedicated workspace menus untouched", () => {
+  it("keeps the dedicated workspace menus untouched", () => {
     const dedicated = ROLES.filter((r) => getMenuForRole(r).length > 0);
     expect(dedicated.sort()).toEqual(
-      ["HOD", "DEAN", "VC", "BURSARY", "STUDENT", "LECTURER", "SBC_CHAIRMAN", "DVC_OVERSIGHT", "GOVERNANCE_OVERSIGHT_MEMBER"].sort(),
+      ["HOD", "DEAN", "VC", "BURSARY", "STUDENT", "LECTURER", "SBC_CHAIRMAN", "DVC_OVERSIGHT", "GOVERNANCE_OVERSIGHT_MEMBER", "ADMISSION_COMMITTEE"].sort(),
     );
   });
 

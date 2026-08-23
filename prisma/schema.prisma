@@ -117,6 +117,8 @@ model User {
   senateMattersScreened SenateMatter[]             @relation("SenateMatterScreener")
   senateDecisionsRecorded SenateDecision[]          @relation("SenateDecisionRecorder")
   senateAgendasCreated  SenateAgenda[]             @relation("SenateAgendaCreator")
+  committeeSelections   Application[]              @relation("CommitteeSelection")
+  chairmanDecisions     Application[]              @relation("ChairmanDecision")
 }
 
 model Session {
@@ -225,12 +227,52 @@ model Application {
   programmeId   String
   programme     Programme @relation(fields: [programmeId], references: [id])
   jambNo        String?
-  status        String    @default("DRAFT") // DRAFT | SUBMITTED | SCREENING | PENDING_CAPS | ADMITTED | REJECTED | WITHDRAWN
+  status        String    @default("DRAFT") // DRAFT | SUBMITTED | SHORTLISTED | SELECTED | CHAIRMAN_REVIEW | ADMITTED | NOT_ADMITTED | RETURNED | REJECTED | WITHDRAWN
   capsStatus    String?   // e.g. PENDING | ACCEPTED | REJECTED
   eligibility   Json?     // rules engine result
   nipedsStatus  String?   // UNVERIFIED | VERIFIED | MISMATCH
   parentConsent Boolean   @default(false)
   submittedAt   DateTime?
+
+  // Committee workflow fields
+  committeeSelectionUserId String?
+  committeeSelectionUser   User?    @relation("CommitteeSelection", fields: [committeeSelectionUserId], references: [id], onDelete: SetNull)
+  committeeSelectionAt     DateTime?
+  committeeCategory        String?  // MERIT | STAFF_CHILD | VC_LIST | AUTHORITY_LIST | OTHER_APPROVED_CATEGORY
+  committeeJustification   String?
+  committeeNotes           String?
+
+  // Chairman review fields
+  chairmanDecisionUserId String?
+  chairmanDecisionUser   User?    @relation("ChairmanDecision", fields: [chairmanDecisionUserId], references: [id], onDelete: SetNull)
+  chairmanDecisionAt     DateTime?
+  chairmanDecision       String?  // ADMITTED | NOT_ADMITTED | RETURNED
+  chairmanDecisionNotes  String?
+
+  // Scoring data from Google Apps Script (consumed, not calculated)
+  jambRawScore     Float?
+  jambContribution Float?
+  postUtmScore     Float?
+  postUtmContribution Float?
+  olevelRawPoints  Float?
+  olevelContribution Float?
+  compositeScore   Float?
+  programmeCutoff  Float?
+  cutoffMet        Boolean?
+  eligible         Boolean?
+  meritRank        Int?
+
+  // O-Level details (JSON from Google Apps Script)
+  olevelSubjects   Json?  // [{subject, grade, points, relevant}]
+
+  // Applicant details (from Google Apps Script)
+  applicantName    String?
+  applicantEmail   String?
+  applicantPhone   String?
+  faculty          String?
+  department       String?
+  programmeName    String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   documents     DocumentUpload[]

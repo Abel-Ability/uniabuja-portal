@@ -2,11 +2,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot } from "react-dom/client";
-import { ApplyForm } from "@/app/(public)/apply/apply-form";
+import { ApplicationEmbed } from "@/components/application-embed";
 import { FloatingActions } from "@/components/floating-actions";
 import { Header } from "@/components/header";
 import { Reveal } from "@/components/reveal";
-import { generateCaptcha } from "@/lib/captcha";
 import { Hero } from "@/components/hero";
 import { LoginForm } from "@/components/login-form";
 import { MfaLoginForm } from "@/components/mfa-login-form";
@@ -77,22 +76,9 @@ function check(name: string, el: React.ReactElement) {
   });
 }
 
-const DEPARTMENTS = [
-  {
-    id: "Sociology",
-    name: "Sociology",
-    faculty: "Social Sciences",
-  },
-  {
-    id: "Physics",
-    name: "Physics",
-    faculty: "Physical Science",
-  },
-];
-
 describe("hydration smoke (client components)", () => {
-  it("ApplyForm hydrates without attribute mismatches", async () => {
-    await check("ApplyForm", <ApplyForm departments={DEPARTMENTS} challenge={generateCaptcha()} />);
+  it("ApplicationEmbed hydrates without attribute mismatches", async () => {
+    await check("ApplicationEmbed", <ApplicationEmbed />);
   });
 
   it("FloatingActions hydrates without attribute mismatches", async () => {

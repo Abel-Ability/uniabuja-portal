@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS } from "@/lib/constants";
+import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS, landingForRole } from "@/lib/constants";
 import {
   buildRegistrationDocument,
   getRegistrationForView,
@@ -145,6 +145,7 @@ export default async function ViewRegistrationPage({
   searchParams: Promise<{ reference?: string; session?: string; semester?: string; print?: string }>;
 }) {
   const session = await requireSession();
+  if (session.user.role !== "STUDENT") redirect(landingForRole(session.user.role));
   const { user } = session;
   const params = await searchParams;
 

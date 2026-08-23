@@ -3,8 +3,18 @@ import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { SESSION_COOKIE, SESSION_TTL_MS } from "./constants";
 
-const SECRET =
-  process.env.SESSION_SECRET ?? "dev-only-secret-change-me";
+function getSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (secret && secret.length > 0) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "SESSION_SECRET is required in production. Set it in your environment variables.",
+    );
+  }
+  return "dev-only-secret-change-me";
+}
+
+const SECRET = getSecret();
 
 function sign(payload: string): string {
   return createHmac("sha256", SECRET).update(payload).digest("base64url");

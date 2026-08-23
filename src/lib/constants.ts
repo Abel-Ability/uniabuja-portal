@@ -192,6 +192,7 @@ export const ROLE_LABELS: Record<string, string> = {
   VC: "Vice-Chancellor (Institutional Oversight)",
   SBC_CHAIRMAN: "Senate Business Committee Chairman",
   VERIFIER: "External / Third-party Verifier",
+  ADMISSION_COMMITTEE: "Admission Committee Member",
 };
 
 export const ROLES = Object.keys(ROLE_LABELS);
@@ -468,6 +469,10 @@ export const ACCESS_CONTROL_MATRIX: Matrix = {
     EXAMS_RECORDS: P("V"),
     TRANSCRIPT: P("V"),
   },
+  ADMISSION_COMMITTEE: {
+    ADMISSIONS: P("RWA"),
+    COMMUNICATIONS: P("R"),
+  },
 };
 
 export function permissionsFor(
@@ -682,6 +687,8 @@ export function landingForRole(role: string): string {
       return "/portal/vc";
     case "SBC_CHAIRMAN":
       return "/portal/sbc";
+    case "ADMISSION_COMMITTEE":
+      return "/portal/admissions";
     case "VERIFIER":
       return "/portal/results";
     default:
@@ -720,6 +727,8 @@ export function dashboardForRole(role: string): {
       return { href: "/portal/dvc", label: "Oversight Dashboard", desc: "University-wide oversight" };
     case "VC":
       return { href: "/portal/vc", label: "VC Dashboard", desc: "Executive dashboard" };
+    case "ADMISSION_COMMITTEE":
+      return { href: "/portal/admissions", label: "Admission Dashboard", desc: "Application review and decisions" };
     default:
       return undefined;
   }
@@ -778,7 +787,11 @@ export const VC_MENU: { href: string; label: string; description: string }[] = [
   { href: "/portal/vc", label: "Executive Dashboard", description: "University-wide command centre" },
   { href: "/portal/vc/results", label: "Results & Records", description: "Executive result pipeline" },
   { href: "/portal/vc/university-overview", label: "University Overview", description: "Population, staffing and faculties" },
+  { href: "/portal/vc/faculties", label: "Faculties", description: "Per-faculty department and student breakdown" },
   { href: "/portal/vc/academic", label: "Academic Affairs", description: "Course allocation and pipeline" },
+  { href: "/portal/vc/admissions", label: "Admissions", description: "Application and admission activity" },
+  { href: "/portal/vc/postgraduate", label: "Postgraduate", description: "PG admissions, supervision and theses" },
+  { href: "/portal/vc/graduation", label: "Graduation", description: "Clearance, convocation and NYSC status" },
   { href: "/portal/vc/governance", label: "Governance", description: "Committee activity and oversight" },
   { href: "/portal/vc/exceptions", label: "Exceptions", description: "Governance exceptions register" },
   { href: "/portal/vc/audit", label: "Audit / Activity", description: "Audit trail and chain integrity" },
@@ -811,6 +824,7 @@ export const LECTURER_MENU: { href: string; label: string; description: string }
   { href: "/portal/lecturer/result-files", label: "Result Files", description: "CSV upload history" },
   { href: "/portal/lecturer/result-correction", label: "Result Corrections", description: "Request and track corrections" },
   { href: "/portal/lecturer/level-adviser/cumulative-result", label: "Level Adviser Lookup", description: "Student cumulative and class standing" },
+  { href: "/portal/lecturer/level-adviser/class-standing", label: "Class Standing Reference", description: "Degree class bands and good-standing rules" },
   { href: "/portal/lms", label: "Learning Management", description: "Moodle SSO and e-learning" },
   { href: "/portal/profiles", label: "Profiles & Research", description: "Department and staff profiles" },
 ];
@@ -828,6 +842,9 @@ export const DVC_GOVERNANCE_MENU: { href: string; label: string; description: st
   { href: "/portal/dvc", label: "Oversight Dashboard", description: "University-wide monitoring" },
   { href: "/portal/dvc/academic", label: "Academic Oversight", description: "Results pipeline and allocations (read-only)" },
   { href: "/portal/dvc/university-overview", label: "University Overview", description: "Population, staffing and faculties" },
+  { href: "/portal/dvc/admissions", label: "Admissions", description: "Application and admission activity (read-only)" },
+  { href: "/portal/dvc/postgraduate", label: "Postgraduate", description: "PG admissions, supervision and theses (read-only)" },
+  { href: "/portal/dvc/graduation", label: "Graduation", description: "Clearance, convocation and NYSC status (read-only)" },
   { href: "/portal/dvc/exceptions", label: "Governance Exceptions", description: "Exceptions register" },
   { href: "/portal/dvc/audit", label: "Audit / Activity", description: "Audit trail and chain integrity" },
   { href: "/portal/dvc/reports", label: "Reports", description: "Oversight reports" },
@@ -844,14 +861,30 @@ export const BURSARY_WORKSPACE: { href: string; label: string; description: stri
   { href: "/portal/bursary", label: "Bursary Dashboard", description: "Financial-management overview" },
   { href: "/portal/bursary/accounts", label: "Student Accounts", description: "Search students and review financial profiles" },
   { href: "/portal/bursary/invoices", label: "Invoices", description: "Issue and manage student invoices" },
+  { href: "/portal/bursary/fees", label: "Fees & Charges", description: "Fee schedules, waivers and outstanding balances" },
   { href: "/portal/bursary/payments", label: "Payments", description: "Payment transactions and receipts" },
   { href: "/portal/bursary/reconciliation", label: "Reconciliation", description: "Match payments and review exceptions" },
   { href: "/portal/bursary/waivers", label: "Waivers", description: "Approve and reject fee waivers" },
   { href: "/portal/bursary/scholarships", label: "Scholarships", description: "Approve and reject scholarship awards" },
   { href: "/portal/bursary/payment-plans", label: "Payment Plans", description: "Installment plans on invoices" },
   { href: "/portal/bursary/clearance", label: "Financial Clearance", description: "Sign off clearance and review obligations" },
+  { href: "/portal/bursary/calendar", label: "Financial Calendar", description: "Registration windows and fee deadlines" },
+  { href: "/portal/bursary/communications", label: "Communications", description: "Fee notices and payment reminders" },
   { href: "/portal/bursary/reports", label: "Financial Reports", description: "Revenue, outstanding and activity reports" },
   { href: "/portal/bursary/audit", label: "Audit / Activity", description: "Audit trail and chain integrity" },
+];
+
+// ------------------------------------------------------------------
+// Admission Committee workspace navigation
+// ------------------------------------------------------------------
+
+export const ADMISSION_COMMITTEE_MENU: { href: string; label: string; description: string }[] = [
+  { href: "/portal/admissions", label: "Admission Dashboard", description: "Overview of application activity" },
+  { href: "/portal/admissions/merit-list", label: "Merit List", description: "Ranked eligible applicants" },
+  { href: "/portal/admissions/selected", label: "Selected Candidates", description: "Committee selections pending chairman review" },
+  { href: "/portal/admissions/chairman", label: "Chairman Review", description: "Final admission confirmation (chairman only)" },
+  { href: "/portal/admissions/decisions", label: "Admission Decisions", description: "Confirmed and rejected decisions" },
+  { href: "/portal/admissions/reports", label: "Reports", description: "Admission statistics and reports" },
 ];
 
 // ------------------------------------------------------------------
@@ -881,6 +914,8 @@ export function getMenuForRole(role: string): {
     case "DVC_OVERSIGHT":
     case "GOVERNANCE_OVERSIGHT_MEMBER":
       return DVC_GOVERNANCE_MENU;
+    case "ADMISSION_COMMITTEE":
+      return ADMISSION_COMMITTEE_MENU;
     default:
       return [];
   }
@@ -952,10 +987,12 @@ export const MAX_ISSUABLE_INVOICE_CENTS = 500_000_000_00;
 
 export const COMMITTEES = {
   GOVERNANCE_OVERSIGHT: "GOVERNANCE_OVERSIGHT",
+  ADMISSIONS_COMMITTEE: "ADMISSIONS_COMMITTEE",
 } as const;
 
 export const COMMITTEE_LABELS: Record<string, string> = {
   GOVERNANCE_OVERSIGHT: "Governance & Oversight Committee",
+  ADMISSIONS_COMMITTEE: "Admissions Committee",
 };
 
 export const MEMBERSHIP_DESIGNATIONS = {
@@ -967,3 +1004,97 @@ export const MEMBERSHIP_STATUSES = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
 } as const;
+
+// ------------------------------------------------------------------
+// Admission Committee workflow constants
+// ------------------------------------------------------------------
+
+// Application statuses used by the committee workflow
+export const ADMISSION_STATUSES = [
+  "SUBMITTED",
+  "SHORTLISTED",
+  "SELECTED",
+  "CHAIRMAN_REVIEW",
+  "ADMITTED",
+  "NOT_ADMITTED",
+  "RETURNED",
+  "REJECTED",
+  "WITHDRAWN",
+] as const;
+
+export const ADMISSION_STATUS_LABELS: Record<string, string> = {
+  SUBMITTED: "Submitted",
+  SHORTLISTED: "Shortlisted",
+  SELECTED: "Selected",
+  CHAIRMAN_REVIEW: "Pending Chairman Review",
+  ADMITTED: "Admitted",
+  NOT_ADMITTED: "Not Admitted",
+  RETURNED: "Returned for Review",
+  REJECTED: "Rejected",
+  WITHDRAWN: "Withdrawn",
+};
+
+// Valid state transitions for the admission workflow
+export const ADMISSION_VALID_TRANSITIONS: Record<string, string[]> = {
+  SUBMITTED: ["SHORTLISTED", "REJECTED", "WITHDRAWN"],
+  SHORTLISTED: ["SELECTED", "REJECTED", "WITHDRAWN"],
+  SELECTED: ["CHAIRMAN_REVIEW", "SHORTLISTED"],
+  CHAIRMAN_REVIEW: ["ADMITTED", "NOT_ADMITTED", "RETURNED"],
+  RETURNED: ["SELECTED", "REJECTED"],
+  ADMITTED: [],
+  NOT_ADMITTED: [],
+  REJECTED: [],
+  WITHDRAWN: [],
+};
+
+// Admission categories
+export const ADMISSION_CATEGORIES = [
+  "MERIT",
+  "STAFF_CHILD",
+  "VC_LIST",
+  "AUTHORITY_LIST",
+  "OTHER_APPROVED_CATEGORY",
+] as const;
+
+export const ADMISSION_CATEGORY_LABELS: Record<string, string> = {
+  MERIT: "Merit",
+  STAFF_CHILD: "Staff Child",
+  VC_LIST: "VC List",
+  AUTHORITY_LIST: "Authority List",
+  OTHER_APPROVED_CATEGORY: "Other Approved Category",
+};
+
+// Chairman decision outcomes
+export const CHAIRMAN_DECISIONS = [
+  "ADMITTED",
+  "NOT_ADMITTED",
+  "RETURNED",
+] as const;
+
+// O-Level grade points
+export const OLEVEL_GRADE_POINTS: Record<string, number> = {
+  A1: 6,
+  B2: 5,
+  B3: 4,
+  C4: 3,
+  C5: 2,
+  C6: 1,
+  D7: 0,
+  E8: 0,
+  F9: 0,
+};
+
+// Maximum O-Level raw points (5 subjects x 6 points each)
+export const OLEVEL_MAX_RAW_POINTS = 30;
+
+// Maximum O-Level weighted contribution (out of 50)
+export const OLEVEL_MAX_WEIGHTED = 50;
+
+// Maximum JAMB score
+export const JAMB_MAX_SCORE = 400;
+
+// Maximum JAMB weighted contribution (out of 50)
+export const JAMB_MAX_WEIGHTED = 50;
+
+// Maximum composite admission score
+export const ADMISSION_MAX_SCORE = 100;

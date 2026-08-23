@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Card, PageHeader, Table } from "@/components/ui";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_SESSION } from "@/lib/constants";
+import { CURRENT_SESSION, landingForRole } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = { title: "My Courses" };
 
 export default async function MyCoursesPage() {
   const session = await requireSession();
+  if (session.user.role !== "STUDENT") redirect(landingForRole(session.user.role));
   const { user } = session;
   const sessionKey = CURRENT_SESSION || "2025/2026";
 

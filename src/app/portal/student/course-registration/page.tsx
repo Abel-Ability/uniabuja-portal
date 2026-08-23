@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS } from "@/lib/constants";
+import { CURRENT_SESSION, CURRENT_SEMESTER, SEMESTER_LABELS, landingForRole } from "@/lib/constants";
 import { getEligibleStudentCourseOfferings, MIN_REGISTRATION_UNITS } from "@/lib/student-registration";
 import { getRegistrationForView, isRegistrationFinalised } from "@/lib/student-finalisation";
 import { CourseRegistrationForm } from "./CourseRegistrationForm";
@@ -14,6 +15,7 @@ export const metadata: Metadata = { title: "Course Registration" };
 
 export default async function CourseRegistrationPage() {
   const session = await requireSession();
+  if (session.user.role !== "STUDENT") redirect(landingForRole(session.user.role));
   const { user } = session;
 
   const [eligible, existingRegistrations, currentRegistration] = await Promise.all([

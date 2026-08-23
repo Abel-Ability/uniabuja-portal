@@ -154,7 +154,8 @@ const LECTURER_HELP: RoleHelpContent = {
     { href: "/portal/lecturer/course-results", label: "Course Results", body: "Status of every result you submitted." },
     { href: "/portal/lecturer/result-files", label: "Result Files", body: "Your CSV upload history and row errors." },
     { href: "/portal/lecturer/result-correction", label: "Result Corrections", body: "Request and track result corrections." },
-    { href: "/portal/lecturer/level-adviser/cumulative-result", label: "Level Adviser Lookup", body: "Look up a student’s cumulative result and class standing." },
+    { href: "/portal/lecturer/level-adviser/cumulative-result", label: "Level Adviser Lookup", body: "Look up a student\u2019s cumulative result and class standing." },
+    { href: "/portal/lecturer/level-adviser/class-standing", label: "Class Standing Reference", body: "Degree class bands and good-standing rules." },
     { href: "/portal/lms", label: "Learning Management", body: "Moodle e-learning." },
     { href: "/portal/profiles", label: "Profiles & Research", body: "Department and staff profiles." },
   ],
@@ -404,12 +405,15 @@ const BURSARY_HELP: RoleHelpContent = {
     { href: "/portal/bursary", label: "Bursary Dashboard", body: "Financial-management overview." },
     { href: "/portal/bursary/accounts", label: "Student Accounts", body: "Search students and review financial profiles." },
     { href: "/portal/bursary/invoices", label: "Invoices", body: "Issue and manage student invoices." },
+    { href: "/portal/bursary/fees", label: "Fees & Charges", body: "Fee schedules, waivers and outstanding balances." },
     { href: "/portal/bursary/payments", label: "Payments", body: "Payment transactions and receipts." },
     { href: "/portal/bursary/reconciliation", label: "Reconciliation", body: "Match payments and review exceptions." },
     { href: "/portal/bursary/waivers", label: "Waivers", body: "Approve and reject fee waivers." },
     { href: "/portal/bursary/scholarships", label: "Scholarships", body: "Approve and reject scholarship awards." },
     { href: "/portal/bursary/payment-plans", label: "Payment Plans", body: "Installment plans on invoices." },
     { href: "/portal/bursary/clearance", label: "Financial Clearance", body: "Sign off clearance and review obligations." },
+    { href: "/portal/bursary/calendar", label: "Financial Calendar", body: "Registration windows and fee deadlines." },
+    { href: "/portal/bursary/communications", label: "Communications", body: "Fee notices and payment reminders." },
     { href: "/portal/bursary/reports", label: "Financial Reports", body: "Revenue, outstanding and activity reports." },
     { href: "/portal/bursary/audit", label: "Audit / Activity", body: "Audit trail and chain integrity." },
   ],
@@ -544,6 +548,9 @@ const DVC_GOVERNANCE_HELP: RoleHelpContent = {
     { href: "/portal/dvc", label: "Oversight Dashboard", body: "University-wide monitoring." },
     { href: "/portal/dvc/academic", label: "Academic Oversight", body: "Results pipeline and allocations (read-only)." },
     { href: "/portal/dvc/university-overview", label: "University Overview", body: "Population, staffing and faculties." },
+    { href: "/portal/dvc/admissions", label: "Admissions", body: "Application and admission activity (read-only)." },
+    { href: "/portal/dvc/postgraduate", label: "Postgraduate", body: "PG admissions, supervision and theses (read-only)." },
+    { href: "/portal/dvc/graduation", label: "Graduation", body: "Clearance, convocation and NYSC status (read-only)." },
     { href: "/portal/dvc/exceptions", label: "Governance Exceptions", body: "Exceptions register." },
     { href: "/portal/dvc/audit", label: "Audit / Activity", body: "Audit trail and chain integrity." },
     { href: "/portal/dvc/reports", label: "Reports", body: "Oversight reports." },
@@ -615,7 +622,11 @@ const VC_HELP: RoleHelpContent = {
     { href: "/portal/vc", label: "Executive Dashboard", body: "University-wide command centre." },
     { href: "/portal/vc/results", label: "Results & Records", body: "Executive result pipeline." },
     { href: "/portal/vc/university-overview", label: "University Overview", body: "Population, staffing and faculties." },
+    { href: "/portal/vc/faculties", label: "Faculties", body: "Per-faculty department and student breakdown." },
     { href: "/portal/vc/academic", label: "Academic Affairs", body: "Course allocation and pipeline." },
+    { href: "/portal/vc/admissions", label: "Admissions", body: "Application and admission activity." },
+    { href: "/portal/vc/postgraduate", label: "Postgraduate", body: "PG admissions, supervision and theses." },
+    { href: "/portal/vc/graduation", label: "Graduation", body: "Clearance, convocation and NYSC status." },
     { href: "/portal/vc/governance", label: "Governance", body: "Committee activity and oversight." },
     { href: "/portal/vc/exceptions", label: "Exceptions", body: "Governance exceptions register." },
     { href: "/portal/vc/audit", label: "Audit / Activity", body: "Audit trail and chain integrity." },
@@ -1034,6 +1045,97 @@ const VERIFIER_HELP: RoleHelpContent = genericHelp({
   ],
 });
 
+// ------------------------------------------------------------------
+// Admission Committee
+// ------------------------------------------------------------------
+
+const ADMISSION_COMMITTEE_HELP: RoleHelpContent = {
+  description:
+    "Guidance for working inside the Admission Committee workspace — reviewing applications, selecting candidates, and managing admission decisions.",
+  workspace:
+    "Your Admission Committee workspace is where you review applicants, assess eligibility and scores, select candidates for admission, and (for the Chairman) confirm final admission decisions. The workspace consumes application analysis from the separately deployed Google Apps Script system.",
+  startHere: [
+    "Open the Admission Dashboard to see the current state of applications.",
+    "Use the Merit List to review ranked eligible applicants.",
+    "Select eligible candidates and submit them for Chairman review.",
+  ],
+  sections: [
+    { href: "/portal/admissions", label: "Admission Dashboard", body: "Overview of application activity and committee progress." },
+    { href: "/portal/admissions/merit-list", label: "Merit List", body: "Ranked eligible applicants with filters and search." },
+    { href: "/portal/admissions/selected", label: "Selected Candidates", body: "Candidates selected by committee members, pending chairman review." },
+    { href: "/portal/admissions/chairman", label: "Chairman Review", body: "Final admission confirmation (chairman only)." },
+    { href: "/portal/admissions/decisions", label: "Admission Decisions", body: "Confirmed and rejected decisions." },
+    { href: "/portal/admissions/reports", label: "Reports", body: "Admission statistics and reports." },
+  ],
+  workflow: [
+    { step: "Review the Merit List", note: "Open the Merit List to see all eligible applicants ranked by composite score." },
+    { step: "Select candidates", note: "Select eligible candidates and assign an admission category (Merit, Staff Child, VC List, etc.)." },
+    { step: "Submit for Chairman review", note: "Once selections are complete, submit them for the Chairman's final review." },
+    { step: "Chairman confirms admission", note: "The Chairman reviews selected candidates and confirms or rejects admission." },
+    { step: "Admission notification", note: "After confirmation, the applicant's status changes to ADMITTED and a notification is sent." },
+  ],
+  canDo: [
+    "View all submitted applications and their scores.",
+    "Filter and search the merit list by programme, faculty, eligibility, and score range.",
+    "Select eligible candidates for admission.",
+    "Assign admission categories (Merit, Staff Child, VC List, Authority List).",
+    "View detailed applicant information including JAMB, O-Level, and composite scores.",
+    "Submit selected candidates for Chairman review (committee members).",
+    "Confirm or reject admission (Chairman only).",
+    "View admission decisions and reports.",
+  ],
+  cannotDo: [
+    "Edit JAMB or O-Level scores through the portal.",
+    "Select ineligible candidates or those below the programme cut-off.",
+    "Confirm admission without Chairman authority.",
+    "Modify another committee member's selections.",
+    "Bypass the minimum academic eligibility requirement for special categories.",
+    "Access the Google Apps Script application form directly.",
+  ],
+  results:
+    "Open 'Admission Decisions' in your sidebar to see confirmed and rejected decisions. The 'Reports' section provides statistics on applications, categories, and faculties.",
+  after:
+    "Once the Chairman confirms admission, the applicant's status changes to ADMITTED and an admission notification is triggered. The applicant does NOT automatically become a student — that happens through a separate controlled migration workflow.",
+  dashboard:
+    'Click "Admission Dashboard" at the top of your sidebar to return to the overview at any time.',
+  history:
+    "All committee decisions and chairman confirmations are recorded in the audit trail. Previous admission sessions remain accessible through the session filters.",
+  faqs: [
+    {
+      q: "How do I view applicant scores?",
+      a: "Open the Merit List and click on an applicant's name to see their full score breakdown including JAMB, O-Level, and composite score.",
+    },
+    {
+      q: "What are the O-Level grade points?",
+      a: "A1=6, B2=5, B3=4, C4=3, C5=2, C6=1, D7=0, E8=0, F9=0. The maximum raw score is 30 (5 subjects × 6 points), weighted to 50 points.",
+    },
+    {
+      q: "How is the composite score calculated?",
+      a: "JAMB contribution (50%) + O-Level contribution (50%) = 100 points. If Post-UTME is available, it replaces the JAMB component.",
+    },
+    {
+      q: "Can I select a candidate who doesn't meet the cut-off?",
+      a: "No. The system prevents selection of candidates who are ineligible or below the programme cut-off.",
+    },
+    {
+      q: "What happens after I select a candidate?",
+      a: "Selected candidates appear in the 'Selected Candidates' section. You can then submit them for Chairman review. Only the Chairman can confirm final admission.",
+    },
+    {
+      q: "What is the difference between committee selection and chairman confirmation?",
+      a: "Committee members select candidates based on merit and eligibility. The Chairman provides the final authority to confirm admission. A committee member's selection does NOT constitute final admission.",
+    },
+    {
+      q: "Can I change a candidate's admission category?",
+      a: "Yes, you can update the category before submitting for Chairman review. Non-merit categories require justification.",
+    },
+    {
+      q: "Where does the application data come from?",
+      a: "Application data is consumed from the separately deployed Google Apps Script system. The portal does not duplicate the application processing engine.",
+    },
+  ],
+};
+
 export const ROLE_HELP: Record<string, RoleHelpContent> = {
   STUDENT: STUDENT_HELP,
   LECTURER: LECTURER_HELP,
@@ -1053,6 +1155,7 @@ export const ROLE_HELP: Record<string, RoleHelpContent> = {
   TIMETABLE: TIMETABLE_HELP,
   IT_ADMIN: IT_ADMIN_HELP,
   VERIFIER: VERIFIER_HELP,
+  ADMISSION_COMMITTEE: ADMISSION_COMMITTEE_HELP,
 };
 
 export function helpForRole(role: string): RoleHelpContent {

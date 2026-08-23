@@ -5,7 +5,18 @@ import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 // the expected answer on verification, so no per-request server state is
 // needed. The TTL bounds replay: a solved token stops verifying once expired.
 
-const SECRET = process.env.CAPTCHA_SECRET ?? "dev-only-captcha-secret";
+function getSecret(): string {
+  const secret = process.env.CAPTCHA_SECRET;
+  if (secret && secret.length > 0) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "CAPTCHA_SECRET is required in production. Set it in your environment variables.",
+    );
+  }
+  return "dev-only-captcha-secret";
+}
+
+const SECRET = getSecret();
 const TTL_MS = 10 * 60 * 1000;
 
 function sign(payload: string): string {

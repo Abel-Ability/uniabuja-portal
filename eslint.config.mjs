@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Separate standalone app with its own ESLint config.
     "uni-abuja-connect/**",
+    // Separate standalone conference site (Vite) — not part of the portal.
+    "tass2026/**",
   ]),
 ]);
 

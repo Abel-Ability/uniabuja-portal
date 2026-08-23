@@ -12,7 +12,7 @@ import {
   Table,
   EmptyState,
 } from "@/components/ui";
-import { ApplicationForm } from "./application-form";
+import { ApplicationEmbed } from "@/components/application-embed";
 import { DocumentUploadForm } from "./document-upload-form";
 import { AdvanceApplicationButton } from "./advance-application-button";
 import { VerifyDocumentButton } from "./verify-document-button";
@@ -50,21 +50,19 @@ export default async function Page() {
   if (!session) redirect("/login");
   const { user } = session;
 
+  if (user.role === "ADMISSION_COMMITTEE") {
+    redirect("/portal/admissions");
+  }
+
   if (user.role === "APPLICANT") {
-    const [application, programmes] = await Promise.all([
-      prisma.application.findFirst({
-        where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
-        include: {
-          programme: true,
-          documents: { orderBy: { createdAt: "desc" } },
-        },
-      }),
-      prisma.programme.findMany({
-        where: { programmeType: { in: ["UTME", "DISTANCE_LEARNING", "TRANSFER"] } },
-        orderBy: { code: "asc" },
-      }),
-    ]);
+    const application = await prisma.application.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        programme: true,
+        documents: { orderBy: { createdAt: "desc" } },
+      },
+    });
 
     if (!application) {
       return (
@@ -77,7 +75,7 @@ export default async function Page() {
           <div className="mx-auto max-w-6xl space-y-8 px-4 sm:px-8">
             <Card>
               <h2 className="mb-4 font-head text-lg font-bold text-slate">New application</h2>
-              <ApplicationForm programmes={programmes} defaultJambNo={user.jambNo ?? null} />
+              <ApplicationEmbed />
             </Card>
           </div>
         </div>

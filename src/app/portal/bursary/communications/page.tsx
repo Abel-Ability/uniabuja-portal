@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSession } from "@/lib/session";
 import { PageHeader, Table, StatusBadge, EmptyState } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
+import { landingForRole } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +12,9 @@ export const metadata: Metadata = { title: "Communications" };
 
 export default async function CommunicationsPage() {
   const session = await getCurrentSession();
-  if (!session) return null;
+  if (!session) redirect("/login");
+  if (session.user.role !== "BURSARY") redirect(landingForRole(session.user.role));
   const { user } = session;
-
-  if (user.role !== "BURSARY") return null;
 
   const [
     feeNotices,

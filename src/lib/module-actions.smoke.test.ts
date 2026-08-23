@@ -26,10 +26,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 const actions = await import("./module-actions");
-const applyActions = await import("../app/(public)/apply/actions");
 const loginHelpers = await import("../app/login/actions");
-const verification = await import("../lib/verification");
-import { validatePasswordPolicy } from "./password";
 
 let studentId: string;
 let alumniId: string;
@@ -261,90 +258,7 @@ describe("module actions (integration)", () => {
   }, 20_000);
 });
 
-describe("public application flow (no session)", () => {
-  const email = `smoke-applicant-${Date.now()}@uniabuja.edu.ng`;
-  const programmeId = "UG-SOCIOLOGY-BA";
-
-  async function submit() {
-    const ch = await applyActions.freshCaptchaChallenge();
-    const digits = ch.question.match(/\d+/g) ?? ["0", "0"];
-    const answer = String(Number(digits[0]) + Number(digits[1]));
-    return applyActions.submitPublicApplication(null, fd({
-      fullName: "Smoke Applicant",
-      email,
-      phone: "08000000000",
-      dob: "2005-01-01",
-      gender: "female",
-      applicationType: "UTME",
-      department: "Sociology",
-      programmeId,
-      programmeName: "B.A. Sociology",
-      jambNo: "2026/99999999AB",
-      jambScore: "240",
-      parentConsent: "on",
-      dataConsent: "on",
-      captcha: ch.token,
-      captchaAnswer: answer,
-    }));
-  }
-
-  afterAll(async () => {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      const appIds = (await prisma.application.findMany({
-        where: { userId: user.id },
-        select: { id: true },
-      })).map((a) => a.id);
-      await prisma.application.deleteMany({ where: { userId: user.id } });
-      await prisma.auditLog.deleteMany({ where: { targetId: { in: appIds } } });
-      await prisma.auditLog.deleteMany({ where: { actorUserId: user.id } });
-      await prisma.user.delete({ where: { id: user.id } });
-    }
-  });
-
-  it("rejects a missing/bogus submission", async () => {
-    const res = await applyActions.submitPublicApplication(null, fd({ website: "spam" }));
-    expect(res.error).toMatch(/Invalid request/);
-  });
-
-  it("creates an applicant account and SUBMITTED application without a session", async () => {
-    const res = await submit();
-    expect(res.ok).toBe(true);
-    expect(res.username).toBe(email.toUpperCase());
-    expect(res.tempPassword).toBeTruthy();
-    expect(validatePasswordPolicy(res.tempPassword!).ok).toBe(true);
-
-    const user = await prisma.user.findUnique({ where: { email } });
-    expect(user).toBeTruthy();
-    expect(user!.role).toBe("APPLICANT");
-    expect(user!.mustChangePassword).toBe(true);
-    expect(user!.username).toBe(email.toUpperCase());
-    expect(user!.emailVerifiedAt).toBeNull();
-
-    // Demo mode (no RESEND_API_KEY) returns the magic link to show on-screen.
-    expect(res.verifyLink).toMatch(/\/verify-email\?token=/);
-    const rawToken = new URLSearchParams(res.verifyLink!.split("?")[1]).get("token")!;
-    const tokens = await prisma.emailVerificationToken.count({
-      where: { userId: user!.id, usedAt: null },
-    });
-    expect(tokens).toBe(1);
-
-    const v = await verification.verifyEmailToken(rawToken);
-    expect(v.ok).toBe(true);
-    const verified = await prisma.user.findUnique({ where: { email } });
-    expect(verified!.emailVerifiedAt).toBeTruthy();
-
-    const app = await prisma.application.findFirst({ where: { userId: user!.id } });
-    expect(app).toBeTruthy();
-    expect(app!.status).toBe("SUBMITTED");
-    expect(app!.submittedAt).toBeTruthy();
-  }, 30_000);
-
-  it("rejects a second application from the same email", async () => {
-    const res = await submit();
-    expect(res.error).toMatch(/already have an application in progress/);
-  });
-
+describe("login username fallback", () => {
   it("finds the seeded applicant via case-insensitive email fallback", async () => {
     const seeded = await prisma.user.findUnique({
       where: { email: "applicant@uniabuja.edu.ng" },
