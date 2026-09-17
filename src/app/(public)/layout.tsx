@@ -1,6 +1,7 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { FloatingActions } from "@/components/floating-actions";
+import { BackgroundAudio } from "@/components/background-audio";
 import { getSheetDeadlines } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function PublicLayout({
       <main id="main-content">{children}</main>
       <Footer />
       <FloatingActions />
+      <BackgroundAudio />
     </>
   );
 }
