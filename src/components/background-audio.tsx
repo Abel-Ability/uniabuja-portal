@@ -7,6 +7,8 @@ export function BackgroundAudio() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const isMutedRef = useRef(false);
+  const isPlayingRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -22,7 +24,13 @@ export function BackgroundAudio() {
       if (!hasInteracted) {
         setHasInteracted(true);
         initAudioContext();
-        audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+        audio.play().then(() => {
+          setIsPlaying(true);
+          isPlayingRef.current = true;
+        }).catch(() => {
+          setIsPlaying(false);
+          isPlayingRef.current = false;
+        });
       }
     };
 
@@ -58,7 +66,7 @@ export function BackgroundAudio() {
 
   const animateBars = () => {
     const analyser = analyserRef.current;
-    if (!analyser || isMuted || !isPlaying) {
+    if (!analyser || isMutedRef.current || !isPlayingRef.current) {
       setBarHeights(new Array(16).fill(0.1));
       animationFrameRef.current = requestAnimationFrame(animateBars);
       return;
@@ -98,14 +106,25 @@ export function BackgroundAudio() {
       if (isMuted) {
         audioRef.current.pause();
         setIsPlaying(false);
+        isPlayingRef.current = false;
       } else if (!isMuted && hasInteracted) {
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+          isPlayingRef.current = true;
+        }).catch(() => {
+          setIsPlaying(false);
+          isPlayingRef.current = false;
+        });
       }
     }
   }, [isMuted, hasInteracted]);
 
   const toggleMute = () => {
-    setIsMuted((prev) => !prev);
+    setIsMuted((prev) => {
+      const next = !prev;
+      isMutedRef.current = next;
+      return next;
+    });
   };
 
   if (!hasInteracted) {
