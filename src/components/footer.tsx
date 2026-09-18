@@ -65,7 +65,7 @@ export function Footer() {
             style={{ objectFit: "contain" }}
           />
           <p className="text-xs text-brand-strong">
-            © 2025 Capacity Building and Support. All rights reserved.
+            © 2026 Capacity Building and Support. All rights reserved.
           </p>
         </div>
       </div>
