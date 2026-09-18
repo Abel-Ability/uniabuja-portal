@@ -22,12 +22,15 @@ export function BackgroundAudio() {
 
     const handleInteraction = () => {
       if (!hasInteracted) {
+        console.log("[BackgroundAudio] User interaction detected");
         setHasInteracted(true);
         initAudioContext();
         audio.play().then(() => {
+          console.log("[BackgroundAudio] Audio playback started");
           setIsPlaying(true);
           isPlayingRef.current = true;
-        }).catch(() => {
+        }).catch((e) => {
+          console.log("[BackgroundAudio] Audio playback failed:", e);
           setIsPlaying(false);
           isPlayingRef.current = false;
         });
@@ -51,6 +54,7 @@ export function BackgroundAudio() {
     
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     audioContextRef.current = audioContext;
+    console.log("[BackgroundAudio] AudioContext created, state:", audioContext.state);
 
     const source = audioContext.createMediaElementSource(audioRef.current!);
     const analyser = audioContext.createAnalyser();
@@ -61,12 +65,14 @@ export function BackgroundAudio() {
     analyser.connect(audioContext.destination);
     
     analyserRef.current = analyser;
+    console.log("[BackgroundAudio] Analyser connected, fftSize:", analyser.fftSize);
     animateBars();
   };
 
   const animateBars = () => {
     const analyser = analyserRef.current;
     if (!analyser || isMutedRef.current || !isPlayingRef.current) {
+      console.log("[BackgroundAudio] animateBars skipped:", { hasAnalyser: !!analyser, isMuted: isMutedRef.current, isPlaying: isPlayingRef.current });
       setBarHeights(new Array(16).fill(0.1));
       animationFrameRef.current = requestAnimationFrame(animateBars);
       return;
@@ -74,6 +80,7 @@ export function BackgroundAudio() {
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(dataArray);
+    console.log("[BackgroundAudio] frequency data:", Array.from(dataArray).slice(0, 16));
 
     const bars = 16;
     const heights = [];
@@ -81,6 +88,7 @@ export function BackgroundAudio() {
       const value = dataArray[i] / 255;
       heights.push(Math.max(0.1, value));
     }
+    console.log("[BackgroundAudio] bar heights:", heights);
     setBarHeights(heights);
 
     animationFrameRef.current = requestAnimationFrame(animateBars);
